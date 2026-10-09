@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BEBC">
+<meta name="description" content="BEBC — Brameast Badminton Club court mixer — powered by Insure With Aman, Brampton & GTA.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Insure With Aman">
+<meta property="og:title" content="BEBC — Brameast Badminton Club — Court Mixer">
+<meta property="og:description" content="Shuffle. Smash. Repeat — never the same partner twice. Powered by Insure With Aman · Brampton & GTA · 416-300-0056">
+<meta property="og:url" content="https://badminton.insurewithaman.ca/">
+<meta property="og:image" content="https://badminton.insurewithaman.ca/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BEBC — Brameast Badminton Club — Court Mixer">
+<meta name="twitter:description" content="Shuffle. Smash. Repeat — never the same partner twice. Powered by Insure With Aman.">
+<meta name="twitter:image" content="https://badminton.insurewithaman.ca/preview.png">
+<title>BEBC — Brameast Badminton Club — Court Mixer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1117;
+    --bg2:#121a24;
+    --panel:#18222e;
+    --panel2:#1f2d3d;
+    --line:#2b3a4d;
+    --text:#eef3f8;
+    --muted:#8aa0b6;
+    --c1:#ffb02e;        /* Court 1 - amber */
+    --c1-soft:#ffb02e22;
+    --c2:#1fd1c8;        /* Court 2 - teal */
+    --c2-soft:#1fd1c822;
+    --c3:#a78bfa;        /* Court 3 - violet */
+    --draw:#c6ff4a;      /* shuttlecock lime */
+    --danger:#ff5d6c;
+    --brand:#e9b949;     /* Insure With Aman gold */
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'DM Sans',system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #16324233, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, #2a1d3a33, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding:18px 14px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+
+  /* ---- header ---- */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:16px;
+  }
+  .title{display:flex;align-items:center;gap:10px}
+  .shuttle{font-size:30px;line-height:1;transform:translateY(-2px)}
+  h1{
+    font-family:'Bebas Neue',sans-serif;font-weight:400;
+    font-size:34px;letter-spacing:2px;margin:0;line-height:.9;
+  }
+  h1 .sub{display:block;font-family:'DM Sans';font-size:11px;
+    letter-spacing:3px;color:var(--muted);font-weight:500;margin-top:2px}
+  .round-badge{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:8px 14px;text-align:center;min-width:74px;
+  }
+  .round-badge small{display:block;font-size:9px;letter-spacing:2px;color:var(--muted)}
+  .round-badge b{font-family:'Bebas Neue';font-size:30px;letter-spacing:1px;line-height:.9}
+
+  /* ---- courts ---- */
+  .courts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  @media(max-width:560px){.courts{grid-template-columns:1fr}}
+  .court{
+    background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:14px 14px 16px;position:relative;overflow:hidden;min-height:170px;
+  }
+  .court::before{content:"";position:absolute;inset:0;opacity:.06;
+    background-image:linear-gradient(currentColor 1px,transparent 1px),
+                    linear-gradient(90deg,currentColor 1px,transparent 1px);
+    background-size:26px 26px;pointer-events:none}
+  .court.c1{color:var(--c1)}
+  .court.c2{color:var(--c2)}
+  .court.c3{color:var(--c3)}
+  .court-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .court-name{font-family:'Bebas Neue';font-size:24px;letter-spacing:1.5px;color:currentColor}
+  .court-dot{width:10px;height:10px;border-radius:50%;background:currentColor;
+    box-shadow:0 0 0 4px color-mix(in srgb,currentColor 22%,transparent)}
+  .team{display:flex;flex-direction:column;gap:7px}
+  .vs{display:flex;align-items:center;gap:10px;margin:9px 0;color:var(--muted)}
+  .vs::before,.vs::after{content:"";height:1px;flex:1;background:var(--line)}
+  .vs span{font-family:'Bebas Neue';font-size:16px;letter-spacing:2px}
+  .chip{
+    display:flex;align-items:center;gap:9px;color:var(--text);
+    background:color-mix(in srgb,currentColor 12%,var(--panel2));
+    border:1px solid color-mix(in srgb,currentColor 35%,transparent);
+    border-radius:11px;padding:9px 11px;font-weight:500;font-size:15px;
+    animation:pop .35s ease both;
+  }
+  .chip .pip{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+  .chip-g{margin-left:auto;font-size:10px;font-weight:700;color:var(--muted);background:var(--panel);
+    border:1px solid var(--line);border-radius:9px;padding:2px 7px;min-width:22px;text-align:center}
+  .chip{cursor:pointer}
+  .sub-pick{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);
+    color:var(--text);border-radius:11px;padding:13px 14px;font-size:15px;font-weight:600;
+    margin-bottom:8px;cursor:pointer;font-family:'DM Sans'}
+  .sub-pick:active{background:var(--panel2)}
+  @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}
+
+  .empty{display:flex;align-items:center;justify-content:center;height:120px;
+    color:var(--muted);font-size:14px;text-align:center;padding:0 10px}
+
+  /* ---- resting ---- */
+  .resting{background:var(--panel);border:1px dashed var(--line);border-radius:16px;
+    padding:12px 14px;margin-bottom:16px}
+  .resting h3{margin:0 0 9px;font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:700}
+  .rest-list{display:flex;flex-wrap:wrap;gap:7px}
+  .rest-chip{background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:6px 12px;font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}
+  .rest-chip em{font-style:normal;font-size:10px;font-weight:700;color:var(--brand);
+    background:#e9b94922;border:1px solid #e9b94944;border-radius:10px;padding:2px 6px;letter-spacing:.3px}
+  .rest-empty{color:var(--muted);font-size:13px}
+
+  .note{font-size:12px;color:var(--c1);background:var(--c1-soft);border:1px solid #ffb02e44;
+    border-radius:10px;padding:8px 11px;margin-bottom:14px;display:none}
+  .note.show{display:block}
+
+  /* ---- check-in ---- */
+  .checkin{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px}
+  .checkin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+  .checkin-head h3{margin:0;font-family:'Bebas Neue';font-size:22px;letter-spacing:1px}
+  .checkin-head h3 span{font-family:'DM Sans';font-size:13px;color:var(--muted);font-weight:600;margin-left:4px}
+  .mini{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:10px;
+    padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans'}
+  .mini:active{background:var(--line)}
+  .select-wrap{position:relative;margin-bottom:12px}
+  .select-wrap::after{content:"▾";position:absolute;right:15px;top:50%;transform:translateY(-50%);
+    color:var(--draw);pointer-events:none;font-size:14px}
+  #checkinSelect{width:100%;-webkit-appearance:none;appearance:none;background:var(--bg2);
+    border:1px solid var(--draw);color:var(--text);border-radius:12px;padding:13px 40px 13px 14px;
+    font-size:15px;font-family:'DM Sans';cursor:pointer}
+  #checkinSelect:focus{outline:none}
+  .lineup{display:flex;flex-wrap:wrap;gap:8px}
+  .lineup .ln{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:22px;padding:5px 6px 5px 5px;font-size:14px;font-weight:500;animation:pop .3s ease both}
+  .lineup .num{width:23px;height:23px;border-radius:50%;background:var(--draw);color:#16240a;
+    font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+  .lineup .x{cursor:pointer;color:var(--muted);font-size:13px;padding:0 5px;line-height:1}
+  .lineup .x:active{color:var(--danger)}
+  .lineup .ln-empty{color:var(--muted);font-size:13px;line-height:1.5}
+
+  /* ---- timer ---- */
+  .timer{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;padding:10px 12px;margin-bottom:10px}
+  .timer.running{border-color:var(--draw)}
+  .timer.warn{border-color:var(--brand)}
+  .timer.warn .t-display{color:var(--brand)}
+  .timer.firing{border-color:var(--danger);animation:flash .6s steps(1) infinite}
+  .timer.firing .t-display{color:var(--danger)}
+  @keyframes flash{50%{background:#3a1116}}
+  .t-adj{width:46px;height:46px;flex:none;border-radius:12px;border:1px solid var(--line);
+    background:var(--bg2);color:var(--text);font-size:24px;font-weight:700;cursor:pointer;font-family:'DM Sans'}
+  .t-adj:active{background:var(--panel2)}
+  .t-mid{flex:1;text-align:center}
+  .t-display{font-family:'Bebas Neue';font-size:42px;letter-spacing:2px;line-height:.9;color:var(--text)}
+  .timer.firing .t-display{color:var(--danger)}
+  .t-label{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+  .t-ctrl{width:54px;height:46px;flex:none;border-radius:12px;border:none;background:var(--draw);
+    color:#16240a;font-size:18px;font-weight:800;cursor:pointer;font-family:'DM Sans'}
+  .t-ctrl:active{filter:brightness(.92)}
+  .alarm-stop{display:none;position:fixed;inset:0;z-index:300;width:100%;border:none;
+    background:var(--danger);color:#fff;font-family:'Bebas Neue';font-size:48px;letter-spacing:3px;
+    line-height:1.1;text-align:center;cursor:pointer;animation:flash .6s steps(1) infinite}
+  .alarm-stop.show{display:flex;align-items:center;justify-content:center}
+
+  /* ---- draw button ---- */
+  .draw-btn{
+    width:100%;border:none;cursor:pointer;border-radius:18px;
+    background:linear-gradient(135deg,var(--draw),#9be01f);
+    color:#16240a;font-family:'Bebas Neue';font-size:30px;letter-spacing:2px;
+    padding:18px;margin-bottom:10px;box-shadow:0 10px 30px -8px #c6ff4a55;
+    transition:transform .12s ease, box-shadow .2s ease;
+  }
+  .draw-btn:active{transform:scale(.985)}
+  .draw-btn:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
+  .draw-btn.spinning{pointer-events:none}
+  .draw-btn.locked{background:linear-gradient(135deg,#3a4658,#2b3546);color:#8aa0b6;
+    box-shadow:none;font-size:22px}
+  .row-btns{display:flex;gap:10px;margin-bottom:22px}
+  .ghost{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);
+    border-radius:14px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans'}
+  .ghost:active{background:var(--panel2)}
+
+  /* ---- roster ---- */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+  .panel-head h2{font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;margin:0}
+  .panel-head .count{font-size:12px;color:var(--muted)}
+  .caret{transition:transform .25s;color:var(--muted)}
+  .panel.closed .caret{transform:rotate(-90deg)}
+  .panel.closed .roster-body{display:none}
+  .roster-body{margin-top:14px}
+
+  .add-row{display:flex;gap:8px;margin-bottom:14px}
+  .add-row input{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--text);
+    border-radius:11px;padding:11px 12px;font-size:15px;font-family:'DM Sans'}
+  .add-row input:focus{outline:none;border-color:var(--draw)}
+  .add-row button{background:var(--draw);color:#16240a;border:none;border-radius:11px;
+    padding:0 16px;font-weight:700;font-size:20px;cursor:pointer}
+
+  .player{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line)}
+  .player:last-child{border-bottom:none}
+  .pl-toggle{width:38px;height:22px;border-radius:20px;background:var(--line);position:relative;
+    flex:none;cursor:pointer;transition:background .2s}
+  .pl-toggle::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;
+    border-radius:50%;background:#fff;transition:left .2s}
+  .player.on .pl-toggle{background:var(--draw)}
+  .player.on .pl-toggle::after{left:18px}
+  .pl-name{flex:1;font-size:15px;font-weight:500}
+  .pl-time{display:block;font-size:10px;font-weight:600;color:var(--draw);margin-top:1px;letter-spacing:.3px}
+  .pl-time.out{color:var(--muted)}
+  .player.off .pl-name{color:var(--muted)}
+  .io{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
+  .io button{border:none;padding:8px 13px;font-size:12px;font-weight:800;letter-spacing:.5px;
+    font-family:'DM Sans';cursor:pointer;background:var(--bg2);color:var(--muted);transition:all .12s}
+  .io button:active{transform:scale(.94)}
+  .io .io-in.act{background:var(--draw);color:#16240a}
+  .io .io-out.act{background:var(--danger);color:#fff}
+  .pl-name input{width:100%;background:var(--bg2);border:1px solid var(--draw);color:var(--text);
+    border-radius:8px;padding:6px 8px;font-size:15px;font-family:'DM Sans'}
+  .pl-games{font-size:11px;color:var(--muted);background:var(--bg2);border-radius:20px;
+    padding:3px 9px;flex:none}
+  .rstat{font-size:10px;font-weight:800;letter-spacing:.5px;border-radius:9px;padding:3px 9px;flex:none;
+    animation:rslide .4s ease both}
+  .rstat.play{color:#16240a;background:var(--draw)}
+  .rstat.rest{color:#1a1405;background:var(--brand)}
+  @keyframes rslide{0%{opacity:0;transform:translateX(14px) scale(.85)}60%{transform:translateX(-2px) scale(1.05)}100%{opacity:1;transform:none}}
+  .icon-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:4px 6px;border-radius:8px;
+    color:var(--muted)}
+  .icon-btn:active{background:var(--panel2)}
+  .icon-btn.del:active{color:var(--danger)}
+  .hint{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5}
+
+  .att-bar{display:flex;gap:8px;margin-bottom:12px}
+  .att-bar button{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--text);
+    border-radius:11px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans'}
+  .att-bar button:active{background:var(--panel2)}
+  .att-bar .accent{border-color:var(--draw);color:var(--draw)}
+
+  .bulk{margin-bottom:14px;display:none}
+  .bulk.show{display:block}
+  .bulk textarea{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--text);
+    border-radius:12px;padding:11px 12px;font-size:15px;font-family:'DM Sans';min-height:150px;resize:vertical;line-height:1.7}
+  .bulk textarea:focus{outline:none;border-color:var(--draw)}
+  .bulk-actions{display:flex;gap:8px;margin-top:8px}
+  .bulk-actions button{flex:1;border-radius:11px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans'}
+  .bulk-save{background:var(--draw);color:#16240a}
+  .bulk-cancel{background:var(--panel2);color:var(--muted)}
+  .bulk small{display:block;color:var(--muted);font-size:11px;margin-top:8px;line-height:1.5}
+  footer{text-align:center;color:var(--muted);font-size:11px;margin-top:26px;letter-spacing:.5px}
+
+  /* ---- Insure With Aman branding ---- */
+  .sponsor{display:flex;align-items:stretch;gap:8px;margin-bottom:16px}
+  .sp-brand{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;
+    background:linear-gradient(135deg,#1c2738,#141d29);border:1px solid #33425a;
+    border-left:3px solid var(--brand);border-radius:14px;padding:10px 14px;text-decoration:none}
+  .sp-name{font-family:'Bebas Neue';font-size:20px;letter-spacing:1.5px;color:var(--text);line-height:1}
+  .sp-name b{color:var(--brand)}
+  .sp-tag{font-size:10.5px;color:var(--muted);letter-spacing:.3px}
+  .sp-call{display:flex;align-items:center;justify-content:center;text-decoration:none;
+    background:var(--brand);color:#1a1405;font-weight:800;font-size:13px;border-radius:14px;
+    padding:0 16px;white-space:nowrap;border:none;cursor:pointer;font-family:'DM Sans'}
+  .sp-call:active{filter:brightness(.92)}
+  .sp-contact{position:relative;display:flex}
+  .contact-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel2);
+    border:1px solid var(--line);border-radius:12px;padding:6px;display:none;flex-direction:column;
+    gap:3px;min-width:172px;z-index:30;box-shadow:0 14px 34px -8px rgba(0,0,0,.6)}
+  .contact-menu.show{display:flex;animation:pop .18s ease both}
+  .contact-menu a{text-decoration:none;color:var(--text);font-size:14px;font-weight:600;
+    padding:11px 12px;border-radius:9px}
+  .contact-menu a:active{background:var(--panel)}
+
+  footer{margin-top:30px;border-top:1px solid var(--line);padding-top:18px;line-height:1.7}
+  .f-brand{font-family:'Bebas Neue';font-size:18px;letter-spacing:1px;color:var(--text)}
+  .f-brand b{color:var(--brand)}
+  .f-line{font-size:12px;color:var(--muted)}
+  .f-line a{color:var(--brand);text-decoration:none;font-weight:600}
+  .f-small{font-size:10px;color:var(--line);margin-top:8px;letter-spacing:1px}
+
+  /* ---- hidden coach overlay ---- */
+  .lock-overlay{position:fixed;inset:0;background:rgba(6,9,13,.86);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .lock-overlay.show{display:flex}
+  .lock-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;
+    padding:22px;width:100%;max-width:360px;max-height:86vh;overflow:auto;animation:pop .2s ease both}
+  .lock-title{font-family:'Bebas Neue';font-size:26px;letter-spacing:1px;text-align:center;margin-bottom:16px}
+  .pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:20px}
+  .pin-dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted);display:block}
+  .pin-dots i.on{background:var(--draw);border-color:var(--draw)}
+  .pin-dots.err i{border-color:var(--danger)}
+  .lock-card.shake{animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pin-pad button{background:var(--bg2);border:1px solid var(--line);color:var(--text);
+    font-size:22px;font-weight:600;border-radius:14px;padding:16px 0;cursor:pointer;font-family:'DM Sans'}
+  .pin-pad button:active{background:var(--panel2)}
+  .pin-pad .pin-blank{visibility:hidden}
+  .lock-close{width:100%;margin-top:16px;background:none;border:none;color:var(--muted);
+    font-size:14px;cursor:pointer;font-family:'DM Sans';padding:8px}
+  .coach-hint{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px;text-align:center}
+  .coach-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
+  .coach-row:last-child{border-bottom:none}
+  .coach-row .cn{flex:1;font-size:15px;font-weight:500}
+  .lvl{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
+  .lvl button{border:none;padding:7px 12px;font-size:12px;font-weight:800;font-family:'DM Sans';
+    cursor:pointer;background:var(--bg2);color:var(--muted)}
+  .lvl .s.act{background:#1fd1c8;color:#04201e}
+  .lvl .w.act{background:var(--brand);color:#1a1405}
+  .lock-done{width:100%;margin-top:18px;background:var(--draw);color:#16240a;border:none;
+    border-radius:14px;padding:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:'DM Sans'}
+  .coach-fmt{margin-bottom:14px}
+  .fmt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;
+    font-size:13px;color:var(--text)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
+  .seg button{border:none;padding:7px 11px;font-size:11px;font-weight:800;font-family:'DM Sans';
+    cursor:pointer;background:var(--bg2);color:var(--muted)}
+  .seg button.act{background:var(--draw);color:#16240a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="sponsor">
+    <a class="sp-brand" href="https://insurewithaman.ca" target="_blank" rel="noopener">
+      <span class="sp-name">INSURE WITH <b>AMAN</b></span>
+      <span class="sp-tag">Super Visa · Life · Critical Illness · RESP · RRSP — Brampton &amp; GTA</span>
+    </a>
+    <div class="sp-contact">
+      <button class="sp-call" id="contactBtn">📞 Contact ▾</button>
+      <div class="contact-menu" id="contactMenu">
+        <a href="tel:+14163000056">📞 Call</a>
+        <a href="sms:+14163000056">💬 Text (SMS)</a>
+        <a href="https://wa.me/14163000056" target="_blank" rel="noopener">🟢 WhatsApp</a>
+        <a href="mailto:aman@insurewithaman.ca">✉️ Email</a>
+        <a href="https://insurewithaman.ca" target="_blank" rel="noopener">🛡️ Free Quote</a>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="title">
+      <span class="shuttle">🏸</span>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.0</span></h1>
+    </div>
+    <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
+  </header>
+
+  <div class="panel" id="rosterPanel">
+    <div class="panel-head" id="rosterHead">
+      <h2>Players <span class="count" id="plCount"></span></h2>
+      <span class="caret">▾</span>
+    </div>
+    <div class="roster-body">
+      <div class="att-bar">
+        <button id="allInBtn">✓ All in</button>
+        <button id="allOutBtn">✗ All out</button>
+        <button id="setNamesBtn" class="accent">✎ Names</button>
+      </div>
+
+      <div class="bulk" id="bulkBox">
+        <textarea id="bulkText" placeholder="Aman&#10;Satish&#10;Balli&#10;…one name per line"></textarea>
+        <div class="bulk-actions">
+          <button class="bulk-save" id="bulkSave">Save names</button>
+          <button class="bulk-cancel" id="bulkCancel">Cancel</button>
+        </div>
+        <small>One name per line. Edit everyone's names here in one go. Extra lines add new players; this won't delete anyone.</small>
+      </div>
+
+      <div id="playerList"></div>
+
+      <div class="add-row">
+        <input id="newName" type="text" placeholder="Add a new player…" maxlength="22">
+        <button id="addBtn">＋</button>
+      </div>
+      <p class="hint">As each player arrives they tap <b style="color:var(--draw)">IN</b>; tap <b style="color:var(--danger)">OUT</b> when they leave. Only players set to IN get drawn into courts.</p>
+    </div>
+  </div>
+
+  <div class="courts" id="courts"></div>
+
+  <div class="note" id="note"></div>
+
+  <div class="resting">
+    <h3>SITTING OUT — FIRST UP NEXT ROUND</h3>
+    <div class="rest-list" id="restList"><span class="rest-empty">Nobody yet — draw to begin.</span></div>
+  </div>
+
+  <div class="timer" id="timerBar">
+    <button class="t-adj" id="tMinus">−</button>
+    <div class="t-mid" id="tMid">
+      <div class="t-display" id="tDisplay">15:00</div>
+      <div class="t-label" id="tLabel">🔊 tap to test beep</div>
+    </div>
+    <button class="t-adj" id="tPlus">+</button>
+    <button class="t-ctrl" id="tToggle">▶</button>
+  </div>
+  <button class="alarm-stop" id="alarmStop">⏱ TIME UP<br>TAP TO STOP</button>
+
+  <button class="draw-btn" id="drawBtn">🏸 DRAW NEXT ROUND</button>
+  <div class="row-btns">
+    <button class="ghost" id="resetStatsBtn">↺ Reset rounds & history</button>
+    <button class="ghost" id="restoreNamesBtn" style="display:none">⤺ Restore name list</button>
+    <button class="ghost" id="wishBtn">💡 Wish list</button>
+  </div>
+
+  <div class="lock-overlay" id="wishOverlay">
+    <div class="lock-card">
+      <div class="lock-title">💡 Wish List</div>
+      <div class="coach-hint">Type any change or feature you want, then send it to the developer on WhatsApp.</div>
+      <textarea id="wishText" placeholder="e.g. Add a 4th court option…" style="width:100%;min-height:120px;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:15px;font-family:'DM Sans';line-height:1.6"></textarea>
+      <button class="lock-done" id="wishSend">Send on WhatsApp</button>
+      <button class="lock-close" id="wishCancel">Cancel</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="f-brand">Powered by <b>Insure With Aman</b></div>
+    <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
+    <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.0 · 3 COURTS · NO REPEAT PARTNERS</div>
+  </footer>
+
+  <div class="lock-overlay" id="subOverlay">
+    <div class="lock-card">
+      <div class="lock-title">Substitute</div>
+      <div class="coach-hint" id="subWho">Who comes in?</div>
+      <div id="subList"></div>
+      <button class="lock-close" id="subCancel">Cancel</button>
+    </div>
+  </div>
+
+  <div class="lock-overlay" id="lockOverlay">
+    <div class="lock-card">
+      <div id="pinView">
+        <div class="lock-title">Enter PIN</div>
+        <div class="pin-dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+        <div class="pin-pad" id="pinPad">
+          <button>1</button><button>2</button><button>3</button>
+          <button>4</button><button>5</button><button>6</button>
+          <button>7</button><button>8</button><button>9</button>
+          <button class="pin-blank" disabled></button><button>0</button><button data-k="del">⌫</button>
+        </div>
+        <button class="lock-close" id="pinCancel">Cancel</button>
+      </div>
+      <div id="coachView" style="display:none">
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.0</span></div>
+        <div class="coach-fmt">
+          <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
+            <span><b>Strong/Weak balancing</b></span>
+            <div class="seg"><button id="lvlOn">ON</button><button id="lvlOff">OFF</button></div>
+          </div>
+          <div id="lvlControls">
+            <div class="fmt-row"><span>Next round</span>
+              <div class="seg"><button id="fmtMatched">LEVEL-MATCH</button><button id="fmtMixed">MIXED</button></div>
+            </div>
+            <div class="fmt-row"><span>Auto-alternate each round</span>
+              <div class="seg"><button id="altOn">ON</button><button id="altOff">OFF</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="coach-hint" id="lvlHint">Levels are hidden from players. Set each player's level below.</div>
+        <div id="coachList"></div>
+        <button class="lock-done" id="coachDone">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= STATE ================= */
+/* ▼▼▼ PASTE YOUR CLOUDFLARE WORKER URL BETWEEN THE QUOTES TO TURN ON SYNC ▼▼▼ */
+const SYNC_URL = "https://bbb-sync.iiebrampton.workers.dev";   // live sync backend
+/* ▲▲▲ leave empty for single-phone mode ▲▲▲ */
+const STORE_KEY = 'shuttleRotation.v2';
+let state = {
+  players: [],          // {id, name, active}
+  round: 0,
+  rev: 0,               // sync version counter
+  games: {},            // id -> games played
+  partner: {},          // "a|b" -> times partnered
+  court: {},            // "a|b" -> times on same court
+  rests: {},            // id -> times sat out
+  last: null,           // {courts:[{team1,team2}], resting:[]}
+  timerDuration: 900,  // seconds (15 min)
+  matchNext: true,      // next draw: true=level-matched, false=mixed
+  autoAlt: true,        // auto-flip mode each round
+  tierV: 0,
+  timerV: 0,
+  rosterV: 0,
+  locked: false,       // true while a round is being played (blocks re-draw fishing)
+  inAt: {},            // id -> time-in epoch ms
+  outAt: {},           // id -> time-out epoch ms
+  c2: {},              // id -> times played on the good court (Court 2)
+  levelOn: false       // master switch for strong/weak balancing (off by default)
+};
+let nextId = 1;
+function clock(ts){ const d=new Date(ts); let h=d.getHours(); const m=d.getMinutes(); const ap=h<12?'am':'pm'; h=h%12||12; return h+':'+(m<10?'0':'')+m+ap; }
+function dur(a,b){ let mins=Math.max(0,Math.round((b-a)/60000)); const h=Math.floor(mins/60), m=mins%60; return h?(h+'h '+m+'m'):(m+'m'); }
+
+/* hidden skill tiers — never shown to players (all default strong = feature idle until you tag someone) */
+const WEAK_DEFAULT = [];
+const TIER_V = 3;
+const ROSTER_V = 2;   // bump to push the new member list to every phone
+
+function defaultPlayers(){
+  const names = ['Kuwant Gill','Bharat Kalra','Devashish Sagar','Nilesh Mistry','Sunny Batra',
+    'Lakhvir Randhawa','Satish Sheoran','Balwinder Lall','Kunwar Pangalia','Karamjit Singh',
+    'Tushar Gogadhani','Simarpal Ahluwalia','Parampreet Arora','Mahesh Thani','Paul Kuner',
+    'Siva Rasiah','Dharmendra Saini','Ishmeet Saini','Aman Arora','Dipak Lad',
+    'Loveshant Grewal','Rajesh Satija','Vijay Patel','Rafique Yaqub','Sunil Arora',
+    'Jaspreet Singh','Dinesh Sharma','Aman Bhatia','Amit Bansal','Randhir Singh',
+    'Charan Jeet','Dheeraj Aman','Himanshu Singh','Jagtar Shergill','Jaspreet Singh Anand',
+    'Lakhwinder Gakhal'];
+  state.players = names.map(n=>({id:nextId++, name:n, active:false,
+                                 tier: WEAK_DEFAULT.includes(n)?'weak':'strong'}));
+  state.tierV = TIER_V;
+}
+
+/* ---- persistence (works when deployed; silently skipped in preview) ---- */
+function saveLocal(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({state,nextId})); }catch(e){}
+}
+function save(){ saveLocal(); pushState(); }
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){ const d=JSON.parse(raw); state=d.state; nextId=d.nextId; return true; }
+  }catch(e){}
+  return false;
+}
+
+/* ---- cloud sync (active only when SYNC_URL is set) ---- */
+let syncOk=false, pushTimer=null, rosterWasReset=false;
+function migrate(){
+  // new venue / new member list — replace roster on every phone, once
+  if(state.rosterV!==ROSTER_V){
+    nextId=1; defaultPlayers();
+    state.round=0; state.games={}; state.partner={}; state.court={}; state.rests={}; state.last=null;
+    state.rosterV=ROSTER_V; state.locked=false;
+    state.rev=(state.rev||0)+1000000;   // dominate any old cloud copy
+    rosterWasReset=true;
+  }
+  if(state.tierV!==TIER_V){
+    state.players.forEach(p=> p.tier = WEAK_DEFAULT.includes(p.name)?'weak':'strong');
+    state.tierV=TIER_V;
+  }
+  state.players.forEach(p=>{ if(!p.tier) p.tier='strong'; });
+  if(!state.timerDuration) state.timerDuration=900;
+  if(!state.rests) state.rests={};
+  if(typeof state.rev!=='number') state.rev=0;
+  if(typeof state.matchNext!=='boolean') state.matchNext=true;
+  if(typeof state.autoAlt!=='boolean') state.autoAlt=true;
+  if(state.timerV!==2){ state.timerDuration=900; state.timerV=2; }
+  if(typeof state.locked!=='boolean') state.locked=false;
+  if(!state.inAt) state.inAt={};
+  if(!state.outAt) state.outAt={};
+  if(state.timeFmtV!==1){ state.inAt={}; state.outAt={}; state.timeFmtV=1; }
+  if(!state.c2) state.c2={};
+  if(typeof state.levelOn!=='boolean') state.levelOn=false;
+  saveLocal();
+}
+function reRenderAll(){
+  renderCourts(); syncPeople();
+  if(!tRunning) tRemaining=state.timerDuration;
+  renderTimer(); renderDrawButton();
+  if(typeof updateCount==='function') updateCount();
+}
+function renderDrawButton(){
+  const b=$('drawBtn'); if(!b) return;
+  if(state.locked){ b.classList.add('locked'); b.textContent='🔒 GAME ON — PLAY THIS ROUND'; }
+  else { b.classList.remove('locked'); b.textContent='🏸 DRAW NEXT ROUND'; }
+}
+async function pullState(){
+  if(!SYNC_URL) return;
+  try{
+    const res=await fetch(SYNC_URL,{cache:'no-store'});
+    const remote=await res.json(); syncOk=true;
+    if(remote && typeof remote.rev==='number' && remote.rev>(state.rev||0)){
+      state=remote; migrate(); saveLocal(); reRenderAll();
+    } else { updateCount(); }
+  }catch(e){ syncOk=false; }
+}
+function pushState(){
+  if(!SYNC_URL) return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(async()=>{
+    try{
+      state.rev=(state.rev||0)+1; saveLocal();
+      await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});
+      syncOk=true; updateCount();
+    }catch(e){ syncOk=false; updateCount(); }
+  },350);
+}
+
+/* ================= HELPERS ================= */
+const key=(a,b)=> a<b ? a+'|'+b : b+'|'+a;
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+function nameOf(id){ const p=state.players.find(p=>p.id===id); return p?p.name:'?'; }
+
+/* ================= CORE: build a round ================= */
+function buildRound(){
+  const active = state.players.filter(p=>p.active);
+  if(active.length < 4) return {error:'Need at least 4 active players for one court.'};
+
+  // how many courts / players this round
+  const numCourts = active.length >= 12 ? 3 : active.length >= 8 ? 2 : 1;
+  const numPlaying = numCourts * 4;
+
+  // pick who plays — fairness first:
+  //  1) fewest games played   2) sat out last round → play now   3) most total sit-outs   4) random
+  const lastRest = new Set(state.last ? state.last.resting : []);
+  const g = id => state.games[id]||0;
+  const sorted = shuffle([...active]).sort((a,b)=>{
+    if(g(a.id)!==g(b.id)) return g(a.id)-g(b.id);
+    const ar=lastRest.has(a.id)?0:1, br=lastRest.has(b.id)?0:1;
+    if(ar!==br) return ar-br;
+    return (state.rests[b.id]||0)-(state.rests[a.id]||0);
+  });
+  const playing = sorted.slice(0,numPlaying);
+  const resting = active.filter(p=>!playing.includes(p));
+
+  const lvl = state.levelOn===true;   // master switch: when off, ignore all weak/strong tags
+  const tierOf=id=>{ if(!lvl) return 'strong'; const p=state.players.find(x=>x.id===id);return p&&p.tier==='weak'?'weak':'strong';};
+  const matched = lvl && state.matchNext !== false;   // this round's mode
+
+  // best 2v2 split of a foursome: fewest repeat partners, avoid B+B when mixed
+  const bestPairs=(four)=>{
+    const sp=[[[four[0],four[1]],[four[2],four[3]]],
+              [[four[0],four[2]],[four[1],four[3]]],
+              [[four[0],four[3]],[four[1],four[2]]]];
+    let bp=sp[0], bs=Infinity;
+    for(const s of sp){ let sc=0;
+      s.forEach(tm=>{ sc+=100*(state.partner[key(tm[0],tm[1])]||0);
+        if(tierOf(tm[0])==='weak'&&tierOf(tm[1])==='weak') sc+=40; });
+      if(sc<bs){bs=sc;bp=s;} }
+    return bp;
+  };
+
+  if(matched){
+    // LEVEL-MATCHED: whole single-level courts — strong court vs strong court, B-grade vs B-grade
+    const byFair = arr => shuffle([...arr]).sort((a,b)=>{
+      if(g(a.id)!==g(b.id)) return g(a.id)-g(b.id);
+      const ar=lastRest.has(a.id)?0:1, br=lastRest.has(b.id)?0:1; if(ar!==br) return ar-br;
+      return (state.rests[b.id]||0)-(state.rests[a.id]||0);
+    });
+    let S=byFair(active.filter(p=>tierOf(p.id)==='strong')).map(p=>p.id);
+    let W=byFair(active.filter(p=>tierOf(p.id)==='weak')).map(p=>p.id);
+    const courts=[], used=[];
+    for(let c=0;c<numCourts;c++){
+      let four;
+      if(S.length>=4 && (S.length>=W.length || W.length<4)) four=S.splice(0,4);
+      else if(W.length>=4) four=W.splice(0,4);
+      else { const rem=S.concat(W); four=rem.slice(0,4);
+        four.forEach(id=>{ let i=S.indexOf(id); if(i>=0)S.splice(i,1); else { i=W.indexOf(id); if(i>=0)W.splice(i,1);} }); }
+      if(four.length<4) break;
+      const pr=bestPairs(four); courts.push({team1:pr[0],team2:pr[1]}); used.push(...four);
+    }
+    const restM=active.filter(p=>!used.includes(p.id));
+    return {courts:goodCourtOrder(courts), resting:restM.map(p=>p.id), score:0, matched:true, w:{p:100,c:5}};
+  }
+
+  // MIXED: balanced teams; spread strong/weak evenly across courts (no clustering)
+  const W_PARTNER=100, W_COURT=5, W_WEAK=150, W_BAL=60;
+  let best=null, bestScore=Infinity;
+  const ids=playing.map(p=>p.id); const tries=2500;
+  for(let t=0;t<tries;t++){
+    const s=shuffle([...ids]); const cc=[]; let score=0;
+    for(let c=0;c<numCourts;c++){
+      const four=s.slice(c*4,c*4+4); const team1=[four[0],four[1]],team2=[four[2],four[3]];
+      score+=W_PARTNER*((state.partner[key(team1[0],team1[1])]||0)+(state.partner[key(team2[0],team2[1])]||0));
+      if(tierOf(team1[0])==='weak'&&tierOf(team1[1])==='weak') score+=W_WEAK;
+      if(tierOf(team2[0])==='weak'&&tierOf(team2[1])==='weak') score+=W_WEAK;
+      // court balance: prefer 2 strong + 2 weak; punish 3-1 / 4-0 courts
+      const strongN=four.filter(id=>tierOf(id)==='strong').length;
+      score += W_BAL*Math.abs(strongN-2);
+      for(let i=0;i<4;i++)for(let j=i+1;j<4;j++) score+=W_COURT*(state.court[key(four[i],four[j])]||0);
+      cc.push({team1,team2});
+    }
+    if(score<bestScore){bestScore=score;best=cc; if(score===0)break;}
+  }
+  return {courts:goodCourtOrder(best), resting:resting.map(p=>p.id), score:bestScore, matched:false, w:{p:W_PARTNER,c:W_COURT}};
+}
+
+// Court 2 is the obstruction-free "good" court. Give it to the foursome that has
+// had the least Court-2 time so far, so it rotates fairly across everyone.
+function goodCourtOrder(courts){
+  if(!courts || courts.length<2) return courts;
+  const c2sum = ct => [...ct.team1,...ct.team2].reduce((s,id)=>s+(state.c2[id]||0),0);
+  let minI=0, minV=Infinity;
+  courts.forEach((ct,i)=>{ const v=c2sum(ct); if(v<minV){minV=v;minI=i;} });
+  if(minI!==1){ const t=courts[1]; courts[1]=courts[minI]; courts[minI]=t; }
+  return courts;
+}
+function commitRound(r){
+  state.round++;
+  r.courts.forEach(ct=>{
+    const four=[...ct.team1,...ct.team2];
+    four.forEach(id=> state.games[id]=(state.games[id]||0)+1 );
+    state.partner[key(ct.team1[0],ct.team1[1])]=(state.partner[key(ct.team1[0],ct.team1[1])]||0)+1;
+    state.partner[key(ct.team2[0],ct.team2[1])]=(state.partner[key(ct.team2[0],ct.team2[1])]||0)+1;
+    for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){const k=key(four[i],four[j]);state.court[k]=(state.court[k]||0)+1;}
+  });
+  r.resting.forEach(id=> state.rests[id]=(state.rests[id]||0)+1);
+  if(state.autoAlt!==false) state.matchNext = !r.matched;   // alternate next round
+  state.last=r;
+  if(r.courts.length>=2){ [...r.courts[1].team1,...r.courts[1].team2].forEach(id=> state.c2[id]=(state.c2[id]||0)+1); }
+  state.locked=true;   // block re-drawing until the round is played out
+  save();
+}
+
+/* ================= RENDER ================= */
+const $=id=>document.getElementById(id);
+
+function renderCourts(){
+  const wrap=$('courts');
+  $('roundNum').textContent=state.round;   // always keep the counter in sync
+  const r=state.last;
+  if(!r){
+    wrap.innerHTML=`
+     <div class="court c1"><div class="court-head"><span class="court-name">Court 1</span><span class="court-dot"></span></div>
+       <div class="empty">Press <b style="color:var(--draw);margin:0 4px">DRAW</b> to assign players.</div></div>
+     <div class="court c2"><div class="court-head"><span class="court-name">Court 2</span><span class="court-dot"></span></div>
+       <div class="empty">Teams of two will appear here.</div></div>
+     <div class="court c3"><div class="court-head"><span class="court-name">Court 3</span><span class="court-dot"></span></div>
+       <div class="empty">Fills when 12+ players are IN.</div></div>`;
+    const rest=$('restList'); if(rest) rest.innerHTML='<span class="rest-empty">Nobody yet — draw to begin.</span>';
+    const note=$('note'); if(note) note.classList.remove('show');
+    return;
+  }
+  const courtHTML=(c,idx)=>{
+    const chip=id=>`<div class="chip" data-id="${id}"><span class="pip"></span>${nameOf(id)}<span class="chip-g">${state.games[id]||0}</span></div>`;
+    return `<div class="court ${idx===0?'c1':idx===1?'c2':'c3'}">
+       <div class="court-head"><span class="court-name">Court ${idx+1}</span><span class="court-dot"></span></div>
+       <div class="team">${c.team1.map(chip).join('')}</div>
+       <div class="vs"><span>VS</span></div>
+       <div class="team">${c.team2.map(chip).join('')}</div>
+     </div>`;
+  };
+  wrap.innerHTML = r.courts.map(courtHTML).join('');
+  // always show 3 court slots — fill remaining as placeholders
+  const names3=['Court 1','Court 2','Court 3'], cls3=['c1','c2','c3'];
+  for(let i=r.courts.length;i<3;i++){
+    wrap.innerHTML += `<div class="court ${cls3[i]}"><div class="court-head"><span class="court-name">${names3[i]}</span><span class="court-dot"></span></div><div class="empty">Add more IN players to open this court.</div></div>`;
+  }
+  wrap.querySelectorAll('.chip[data-id]').forEach(el=>{ el.onclick=()=>openSub(+el.dataset.id); });
+
+  // resting
+  const rest=$('restList');
+  rest.innerHTML = r.resting.length
+    ? r.resting.map(id=>`<span class="rest-chip">${nameOf(id)}${state.rests[id]?`<em>sat ${state.rests[id]}×</em>`:''}</span>`).join('')
+    : '<span class="rest-empty">Everyone is playing this round.</span>';
+
+  // repeat note
+  const note=$('note');
+  if(r.score>0){
+    const partnerRepeat = r.score>=r.w.p;
+    note.textContent = partnerRepeat
+      ? '⚠ Not enough fresh combinations left — some pairings had to repeat. Reset history to start fresh.'
+      : 'ℹ Some players have now shared a court before, but no partnerships repeated.';
+    note.classList.add('show');
+  } else note.classList.remove('show');
+
+  $('roundNum').textContent=state.round;
+}
+
+function renderRoster(){
+  const list=$('playerList');
+  list.innerHTML='';
+  // who is playing this round (from the last draw)
+  const playSet=new Set();
+  if(state.last) state.last.courts.forEach(ct=>[...ct.team1,...ct.team2].forEach(id=>playSet.add(id)));
+  [...state.players].sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
+    const div=document.createElement('div');
+    div.className='player'+(p.active?' on':' off');
+    let status='';
+    if(state.last && p.active) status = playSet.has(p.id)
+      ? '<span class="rstat play">PLAYING</span>'
+      : '<span class="rstat rest">RESTING</span>';
+    div.innerHTML=`
+      <div class="io">
+        <button class="io-in${p.active?' act':''}" data-act="in">IN</button>
+        <button class="io-out${p.active?'':' act'}" data-act="out">OUT</button>
+      </div>
+      <div class="pl-name" data-act="name">${escapeHtml(p.name)}${
+        p.active && state.inAt[p.id] ? `<span class="pl-time">in ${clock(state.inAt[p.id])}</span>`
+        : (!p.active && state.outAt[p.id]
+            ? `<span class="pl-time out">out ${clock(state.outAt[p.id])}${state.inAt[p.id]?' · '+dur(state.inAt[p.id],state.outAt[p.id]):''}</span>`
+            : '')
+      }</div>
+      ${status}
+      <span class="pl-games">${state.games[p.id]||0} ▸</span>
+      <button class="icon-btn del" data-act="del" title="Delete">🗑</button>`;
+    div.querySelector('[data-act="in"]').onclick=()=>{if(!p.active){state.inAt[p.id]=Date.now();delete state.outAt[p.id];}checkIn(p);save();syncPeople();};
+    div.querySelector('[data-act="out"]').onclick=()=>{if(p.active)state.outAt[p.id]=Date.now();p.active=false;save();syncPeople();};
+    div.querySelector('[data-act="name"]').onclick=()=>editName(p,div);
+    div.querySelector('[data-act="del"]').onclick=()=>{
+      if(confirm('Delete '+p.name+'?')){
+        state.players=state.players.filter(x=>x.id!==p.id);
+        save();syncPeople();
+      }
+    };
+    list.appendChild(div);
+  });
+  updateCount();
+}
+function updateCount(){
+  const a=state.players.filter(p=>p.active).length;
+  let sync='';
+  if(SYNC_URL){
+    if(!navigator.onLine) sync=' · 📴 offline (saved here, will sync)';
+    else sync = syncOk ? ' · 🟢 live' : ' · 🔴 connecting';
+  }
+  $('plCount').textContent=`· ${a} in / ${state.players.length} players${sync}`;
+}
+window.addEventListener('online', ()=>{ updateCount(); if(SYNC_URL) pushState(); });
+window.addEventListener('offline', updateCount);
+function syncPeople(){ renderRoster(); }
+
+/* late arrivals join at the current group level, so they don't hog every game catching up */
+function checkIn(p){
+  if(!p.active && state.round>0){
+    const act=state.players.filter(x=>x.active);
+    if(act.length){
+      const baseG=Math.min(...act.map(x=>state.games[x.id]||0));
+      const baseR=Math.min(...act.map(x=>state.rests[x.id]||0));
+      state.games[p.id]=Math.max(state.games[p.id]||0, baseG);
+      state.rests[p.id]=Math.max(state.rests[p.id]||0, baseR);
+    }
+  }
+  p.active=true;
+}
+function editName(p,div){
+  const cell=div.querySelector('.pl-name');
+  cell.innerHTML=`<input type="text" maxlength="22" value="${escapeHtml(p.name)}">`;
+  const inp=cell.querySelector('input');inp.focus();inp.select();
+  const done=()=>{const v=inp.value.trim();if(v)p.name=v;save();syncPeople();renderCourts();};
+  inp.onblur=done;
+  inp.onkeydown=e=>{if(e.key==='Enter')inp.blur();};
+}
+function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ================= ACTIONS ================= */
+function draw(){
+  if(state.locked){ flashLock(); return; }
+  primeAudio();
+  const r=buildRound();
+  if(r.error){ alert(r.error); return; }
+  const btn=$('drawBtn');
+  btn.classList.add('spinning');
+  btn.textContent='🏸 drawing…';
+  // little suspense, then reveal with stagger
+  setTimeout(()=>{
+    commitRound(r);
+    renderCourts();
+    renderRoster();
+    btn.classList.remove('spinning');
+    renderDrawButton();
+    resetTimerReady();   // load a fresh 15:00 but DON'T start — host presses Start
+  },650);
+}
+// after a draw, put the clock back to full and stop it; host taps ▶ to start
+function resetTimerReady(){
+  if(alarmTimer) stopAlarm();
+  tRunning=false; clearInterval(tInterval);
+  tRemaining=state.timerDuration;
+  $('timerBar').classList.remove('warn','firing','running');
+  renderTimer();
+}
+function flashLock(){
+  const b=$('drawBtn'); const prev=b.textContent;
+  b.textContent='⏳ FINISH THE ROUND FIRST';
+  setTimeout(()=>renderDrawButton(),1400);
+}
+
+/* ================= TIMER + ALARM ================= */
+let tRemaining = state.timerDuration, tRunning=false, tInterval=null;
+let audioCtx=null, alarmTimer=null, wakeLock=null, alarmAutoStop=null;
+
+function fmt(s){ s=Math.max(0,s|0); const m=(s/60|0); const r=s%60; return m+':'+(r<10?'0':'')+r; }
+function renderTimer(){
+  $('tDisplay').textContent=fmt(tRemaining);
+  $('tToggle').textContent = tRunning?'❚❚':'▶';
+  $('timerBar').classList.toggle('running', tRunning);
+  const lbl=$('tLabel'); if(lbl && !alarmTimer) lbl.textContent = tRunning ? '❚❚ tap to stop' : '▶ press to start';
+}
+function primeAudio(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+  }catch(e){}
+}
+// LOUD train-horn blast — a diesel horn is a chord of several low notes played together.
+// Harsh sawtooth chord + compressor makeup gain = as loud as the phone can physically go.
+let hornComp=null;
+function beep(){
+  if(!audioCtx) return;
+  try{
+    const t=audioCtx.currentTime, dur=1.0;
+    if(!hornComp){
+      hornComp=audioCtx.createDynamicsCompressor();
+      hornComp.threshold.value=-24; hornComp.knee.value=6; hornComp.ratio.value=12;
+      hornComp.attack.value=0.002; hornComp.release.value=0.2;
+      const boost=audioCtx.createGain(); boost.gain.value=2.4;   // makeup gain → maximum loudness
+      hornComp.connect(boost).connect(audioCtx.destination);
+    }
+    // classic air-horn chord (K5-style stack)
+    const chord=[164.8, 220.0, 277.2, 329.6, 440.0];
+    const master=audioCtx.createGain();
+    master.gain.setValueAtTime(0.0001,t);
+    master.gain.exponentialRampToValueAtTime(1.0,t+0.03);   // fast attack
+    master.gain.setValueAtTime(1.0,t+dur-0.08);
+    master.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    master.connect(hornComp);
+    chord.forEach(f=>{
+      const o=audioCtx.createOscillator(); o.type='sawtooth'; o.frequency.value=f;
+      const o2=audioCtx.createOscillator(); o2.type='square'; o2.frequency.value=f*2; // bright overtone to cut through
+      const g2=audioCtx.createGain(); g2.gain.value=0.35;
+      o.connect(master); o2.connect(g2).connect(master);
+      o.start(t); o.stop(t+dur); o2.start(t); o2.stop(t+dur);
+    });
+  }catch(e){}
+}
+function beepShort(freq=820,dur=0.15,vol=0.55){
+  if(!audioCtx) return;
+  try{
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain(), t=audioCtx.currentTime;
+    o.type='sine'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol,t+0.01);
+    g.gain.setValueAtTime(vol,t+dur*0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(t); o.stop(t+dur+0.02);
+  }catch(e){}
+}
+function beepWarn(){ beepShort(760,0.18,0.6); setTimeout(()=>beepShort(760,0.18,0.6),230); }
+function fireAlarm(){
+  tRunning=false; clearInterval(tInterval);
+  $('timerBar').classList.remove('running','warn'); $('timerBar').classList.add('firing');
+  $('alarmStop').classList.add('show');
+  primeAudio(); beep();
+  alarmTimer=setInterval(beep,1200);
+  clearTimeout(alarmAutoStop); alarmAutoStop=setTimeout(stopAlarm, 30000);  // never blinks forever
+  state.locked=false; save(); renderDrawButton();   // round over → next draw unlocked
+}
+function stopAlarm(){
+  clearInterval(alarmTimer); alarmTimer=null; clearTimeout(alarmAutoStop);
+  $('alarmStop').classList.remove('show');
+  $('timerBar').classList.remove('firing','warn');
+  tRemaining=state.timerDuration; renderTimer(); releaseWake();
+  state.locked=false; save(); renderDrawButton();
+}
+function tick(){
+  tRemaining--;
+  if(tRemaining<=0){ tRemaining=0; renderTimer(); fireAlarm(); return; }
+  if(tRemaining===60){ $('timerBar').classList.add('warn'); beepWarn(); }      // 1-minute warning
+  else if(tRemaining<60){
+    if(tRemaining<=5) beepShort(950,0.18,0.6);                                 // final 5s, each second
+    else if(tRemaining%10===0) beepShort(820,0.14,0.5);                        // every 10s in last minute
+  }
+  renderTimer();
+}
+function startTimer(fresh){
+  primeAudio();
+  if(alarmTimer) stopAlarm();
+  if(fresh){ tRemaining=state.timerDuration; $('timerBar').classList.remove('warn'); }
+  if(tRunning) return;
+  tRunning=true; renderTimer(); acquireWake();
+  clearInterval(tInterval); tInterval=setInterval(tick,1000);
+}
+function pauseTimer(){ tRunning=false; clearInterval(tInterval); renderTimer(); releaseWake();
+  state.locked=false; save(); renderDrawButton(); }
+
+async function acquireWake(){ try{ if('wakeLock' in navigator) wakeLock=await navigator.wakeLock.request('screen'); }catch(e){} }
+function releaseWake(){ try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){} }
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&tRunning) acquireWake(); });
+
+$('tToggle').onclick=()=>{ tRunning?pauseTimer():startTimer(false); };
+$('tMinus').onclick=()=>{ if(alarmTimer)stopAlarm();
+  if(tRunning){ tRemaining=Math.max(1,tRemaining-60); }
+  else { state.timerDuration=Math.max(60,state.timerDuration-60); tRemaining=state.timerDuration; }
+  renderTimer(); save(); };
+$('tPlus').onclick=()=>{ if(alarmTimer)stopAlarm();
+  if(tRunning){ tRemaining=Math.min(3600,tRemaining+60); }
+  else { state.timerDuration=Math.min(3600,state.timerDuration+60); tRemaining=state.timerDuration; }
+  renderTimer(); save(); };
+$('alarmStop').onclick=stopAlarm;
+$('tMid').onclick=()=>{ if(alarmTimer){ stopAlarm(); return; } primeAudio(); beep(); setTimeout(beep,300); setTimeout(beep,600); };
+
+/* ---- mid-round substitution: leaver's credit moves to the volunteer ---- */
+let pendingSubX=null;
+function openSub(xId){
+  if(!state.last) return;
+  pendingSubX=xId;
+  $('subWho').textContent='Who comes in for '+nameOf(xId)+'?';
+  const list=$('subList'); list.innerHTML='';
+  const sitting=(state.last.resting||[]).filter(id=>{const p=state.players.find(x=>x.id===id);return p&&p.active;})
+                  .sort((a,b)=>nameOf(a).localeCompare(nameOf(b)));
+  if(!sitting.length){ list.innerHTML='<div class="coach-hint">Nobody is sitting out to swap in right now.</div>'; }
+  sitting.forEach(id=>{
+    const b=document.createElement('button'); b.className='sub-pick';
+    b.textContent=nameOf(id)+'   ('+(state.games[id]||0)+' games)';
+    b.onclick=()=>{ subSwap(pendingSubX,id); $('subOverlay').classList.remove('show'); };
+    list.appendChild(b);
+  });
+  $('subOverlay').classList.add('show');
+}
+function subSwap(xId,vId){
+  if(!state.last) return;
+  let court=null, tk=null, idx=-1;
+  state.last.courts.forEach(ct=>['team1','team2'].forEach(k=>{const i=ct[k].indexOf(xId);if(i>=0){court=ct;tk=k;idx=i;}}));
+  if(!court) return;
+  const four=[...court.team1,...court.team2];
+  const mate=court[tk][1-idx];
+  // move history from X to V (partner + court pairings for this round)
+  state.partner[key(xId,mate)]=Math.max(0,(state.partner[key(xId,mate)]||0)-1);
+  state.partner[key(vId,mate)]=(state.partner[key(vId,mate)]||0)+1;
+  four.forEach(id=>{ if(id!==xId){ state.court[key(xId,id)]=Math.max(0,(state.court[key(xId,id)]||0)-1);
+                                   state.court[key(vId,id)]=(state.court[key(vId,id)]||0)+1; } });
+  // swap on court + resting display
+  court[tk][idx]=vId;
+  state.last.resting=(state.last.resting||[]).filter(id=>id!==vId);
+  if(!state.last.resting.includes(xId)) state.last.resting.push(xId);
+  // game credit: leaver loses this round, volunteer gains it
+  state.games[xId]=Math.max(0,(state.games[xId]||0)-1);
+  state.games[vId]=(state.games[vId]||0)+1;
+  // rest balance: volunteer no longer resting; leaver now resting
+  state.rests[vId]=Math.max(0,(state.rests[vId]||0)-1);
+  state.rests[xId]=(state.rests[xId]||0)+1;
+  save(); renderCourts(); renderRoster();
+}
+
+/* ================= WIRE UP ================= */
+$('contactBtn').onclick=e=>{e.preventDefault();e.stopPropagation();$('contactMenu').classList.toggle('show');};
+document.addEventListener('click',e=>{ if(!e.target.closest('.sp-contact')) $('contactMenu').classList.remove('show'); });
+
+$('subCancel').onclick=()=>$('subOverlay').classList.remove('show');
+$('subOverlay').onclick=e=>{ if(e.target===$('subOverlay')) $('subOverlay').classList.remove('show'); };
+
+/* ---- hidden coach panel (PIN 7156) ---- */
+const PIN='7156';
+let tapTimes=[], pinEntry='';
+$('roundBadge').onclick=()=>{
+  const now=Date.now();
+  tapTimes=tapTimes.filter(t=>now-t<2500); tapTimes.push(now);
+  if(tapTimes.length>=5){ tapTimes=[]; openPin(); }
+};
+function openPin(){
+  pinEntry=''; updateDots();
+  $('pinView').style.display='block'; $('coachView').style.display='none';
+  $('lockOverlay').classList.add('show');
+}
+function updateDots(){
+  const dots=$('pinDots').children;
+  for(let i=0;i<4;i++) dots[i].className = i<pinEntry.length?'on':'';
+}
+$('pinPad').querySelectorAll('button').forEach(b=>{
+  b.onclick=()=>{
+    if(b.dataset.k==='del'){ pinEntry=pinEntry.slice(0,-1); updateDots(); return; }
+    if(b.disabled||pinEntry.length>=4) return;
+    pinEntry+=b.textContent.trim(); updateDots();
+    if(pinEntry.length===4){
+      if(pinEntry===PIN){ openCoach(); }
+      else{
+        const card=document.querySelector('.lock-card'); $('pinDots').classList.add('err'); card.classList.add('shake');
+        setTimeout(()=>{pinEntry='';updateDots();$('pinDots').classList.remove('err');card.classList.remove('shake');},400);
+      }
+    }
+  };
+});
+$('pinCancel').onclick=()=>$('lockOverlay').classList.remove('show');
+$('lockOverlay').onclick=e=>{ if(e.target===$('lockOverlay')) $('lockOverlay').classList.remove('show'); };
+
+function openCoach(){
+  $('pinView').style.display='none'; $('coachView').style.display='block';
+  const on=state.levelOn===true, mm=state.matchNext!==false, aa=state.autoAlt!==false;
+  $('lvlOn').classList.toggle('act',on); $('lvlOff').classList.toggle('act',!on);
+  $('lvlOn').onclick=()=>{state.levelOn=true;save();openCoach();};
+  $('lvlOff').onclick=()=>{state.levelOn=false;save();openCoach();};
+  $('lvlControls').style.opacity = on?'1':'0.4';
+  $('lvlControls').style.pointerEvents = on?'auto':'none';
+  $('coachList').style.opacity = on?'1':'0.4';
+  $('lvlHint').textContent = on
+    ? "Levels are hidden from players. Set each player's level below."
+    : "Balancing is OFF — courts are drawn purely fair & random. Turn ON to use the levels below.";
+  $('fmtMatched').classList.toggle('act',mm); $('fmtMixed').classList.toggle('act',!mm);
+  $('fmtMatched').onclick=()=>{state.matchNext=true;save();openCoach();};
+  $('fmtMixed').onclick=()=>{state.matchNext=false;save();openCoach();};
+  $('altOn').classList.toggle('act',aa); $('altOff').classList.toggle('act',!aa);
+  $('altOn').onclick=()=>{state.autoAlt=true;save();openCoach();};
+  $('altOff').onclick=()=>{state.autoAlt=false;save();openCoach();};
+  const list=$('coachList'); list.innerHTML='';
+  [...state.players].sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
+    const row=document.createElement('div'); row.className='coach-row';
+    row.innerHTML=`<span class="cn">${escapeHtml(p.name)}</span>
+      <div class="lvl">
+        <button class="s${p.tier!=='weak'?' act':''}" data-l="strong">STRONG</button>
+        <button class="w${p.tier==='weak'?' act':''}" data-l="weak">WEAK</button>
+      </div>`;
+    row.querySelector('[data-l="strong"]').onclick=()=>{p.tier='strong';save();openCoach();};
+    row.querySelector('[data-l="weak"]').onclick=()=>{p.tier='weak';save();openCoach();};
+    list.appendChild(row);
+  });
+}
+$('coachDone').onclick=()=>$('lockOverlay').classList.remove('show');
+
+let holdT=null, holdFired=false;
+(()=>{ const db=$('drawBtn');
+  db.onclick=()=>{ if(holdFired){holdFired=false;return;} if(state.locked){flashLock();return;} draw(); };
+  db.addEventListener('pointerdown',()=>{ holdFired=false; if(!state.locked)return;
+    holdT=setTimeout(()=>{ holdFired=true; state.locked=false; save(); renderDrawButton(); draw(); },1200); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>db.addEventListener(ev,()=>clearTimeout(holdT)));
+})();
+$('addBtn').onclick=()=>{
+  const inp=$('newName');const v=inp.value.trim();
+  if(!v)return;
+  state.players.push({id:nextId++,name:v,active:true,tier:'strong'});
+  inp.value='';save();syncPeople();
+};
+$('newName').onkeydown=e=>{if(e.key==='Enter')$('addBtn').click();};
+
+$('rosterHead').onclick=()=>$('rosterPanel').classList.toggle('closed');
+
+/* attendance shortcuts */
+$('allInBtn').onclick=()=>{state.players.forEach(p=>{if(!p.active){state.inAt[p.id]=Date.now();delete state.outAt[p.id];}checkIn(p);});save();syncPeople();};
+$('allOutBtn').onclick=()=>{state.players.forEach(p=>{if(p.active)state.outAt[p.id]=Date.now();p.active=false;});save();syncPeople();};
+
+/* bulk set names */
+$('setNamesBtn').onclick=()=>{
+  $('bulkText').value=state.players.map(p=>p.name).join('\n');
+  $('bulkBox').classList.add('show');
+  $('bulkText').focus();
+};
+$('bulkCancel').onclick=()=>$('bulkBox').classList.remove('show');
+$('bulkSave').onclick=()=>{
+  const lines=$('bulkText').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  lines.forEach((nm,i)=>{
+    if(state.players[i]) state.players[i].name=nm;          // rename in place (keeps stats)
+    else state.players.push({id:nextId++,name:nm,active:true,tier:WEAK_DEFAULT.includes(nm)?'weak':'strong'}); // extra lines = new players
+  });
+  $('bulkBox').classList.remove('show');
+  save();syncPeople();renderCourts();
+};
+$('resetStatsBtn').onclick=()=>{
+  if(confirm('End of day reset? Clears rounds, games, history and all in/out times. Players stay (marked out).')){
+    state.round=0;state.games={};state.partner={};state.court={};state.rests={};state.last=null;state.locked=false;
+    state.inAt={};state.outAt={};state.c2={};
+    state.players.forEach(p=>p.active=false);
+    save();renderCourts();renderRoster();renderDrawButton();
+  }
+};
+$('restoreNamesBtn').onclick=()=>{
+  if(confirm('Restore the original player name list? This replaces the current players.')){
+    nextId=1; defaultPlayers();
+    state.round=0;state.games={};state.partner={};state.court={};state.rests={};state.last=null;state.locked=false;
+    state.inAt={};state.outAt={};state.c2={};
+    save();renderCourts();renderRoster();renderDrawButton();
+  }
+};
+/* wish list */
+$('wishBtn').onclick=()=>{ try{$('wishText').value=localStorage.getItem('bbb_wish')||'';}catch(e){} $('wishOverlay').classList.add('show'); };
+$('wishCancel').onclick=()=>{ try{localStorage.setItem('bbb_wish',$('wishText').value);}catch(e){} $('wishOverlay').classList.remove('show'); };
+$('wishOverlay').onclick=e=>{ if(e.target===$('wishOverlay')){ try{localStorage.setItem('bbb_wish',$('wishText').value);}catch(e2){} $('wishOverlay').classList.remove('show'); } };
+$('wishSend').onclick=()=>{
+  const t=$('wishText').value.trim(); if(!t) return;
+  try{localStorage.setItem('bbb_wish',t);}catch(e){}
+  const msg='[BEBC — Brameast Badminton Club] Wish List:\n'+t;
+  window.open('https://wa.me/12819058789?text='+encodeURIComponent(msg),'_blank');
+  $('wishOverlay').classList.remove('show');
+};
+
+/* ================= INIT ================= */
+if(!load()) defaultPlayers();
+migrate();
+tRemaining=state.timerDuration;
+renderCourts();
+syncPeople();
+renderTimer();
+renderDrawButton();
+if(SYNC_URL){ if(rosterWasReset) pushState(); pullState(); setInterval(pullState, 2500); }
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+</script>
+</body>
+</html>

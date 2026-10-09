@@ -1,0 +1,9 @@
+{
+  // BEBC Badminton — static site served by a Cloudflare Worker (git auto-deploy).
+  // A push to the main branch rebuilds and deploys automatically.
+  "name": "bebc-badminton",
+  "compatibility_date": "2026-10-09",
+  "assets": {
+    "directory": "./"
+  }
+}
