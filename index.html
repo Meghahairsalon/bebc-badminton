@@ -158,23 +158,23 @@
   .lineup .ln-empty{color:var(--muted);font-size:13px;line-height:1.5}
 
   /* ---- timer ---- */
-  .timer{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);
-    border-radius:16px;padding:10px 12px;margin-bottom:10px}
+  .timer{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+    border-radius:20px;padding:18px 16px;margin-bottom:10px}
   .timer.running{border-color:var(--draw)}
   .timer.warn{border-color:var(--brand)}
   .timer.warn .t-display{color:var(--brand)}
   .timer.firing{border-color:var(--danger);animation:flash .6s steps(1) infinite}
   .timer.firing .t-display{color:var(--danger)}
   @keyframes flash{50%{background:#3a1116}}
-  .t-adj{width:46px;height:46px;flex:none;border-radius:12px;border:1px solid var(--line);
-    background:var(--bg2);color:var(--text);font-size:24px;font-weight:700;cursor:pointer;font-family:'DM Sans'}
+  .t-adj{width:58px;height:58px;flex:none;border-radius:14px;border:1px solid var(--line);
+    background:var(--bg2);color:var(--text);font-size:30px;font-weight:700;cursor:pointer;font-family:'DM Sans'}
   .t-adj:active{background:var(--panel2)}
   .t-mid{flex:1;text-align:center}
-  .t-display{font-family:'Bebas Neue';font-size:42px;letter-spacing:2px;line-height:.9;color:var(--text)}
+  .t-display{font-family:'Bebas Neue';font-size:88px;letter-spacing:3px;line-height:.9;color:var(--text)}
   .timer.firing .t-display{color:var(--danger)}
-  .t-label{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:2px}
-  .t-ctrl{width:54px;height:46px;flex:none;border-radius:12px;border:none;background:var(--draw);
-    color:#16240a;font-size:18px;font-weight:800;cursor:pointer;font-family:'DM Sans'}
+  .t-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:4px}
+  .t-ctrl{width:72px;height:66px;flex:none;border-radius:14px;border:none;background:var(--draw);
+    color:#16240a;font-size:26px;font-weight:800;cursor:pointer;font-family:'DM Sans'}
   .t-ctrl:active{filter:brightness(.92)}
   .alarm-stop{display:none;position:fixed;inset:0;z-index:300;width:100%;border:none;
     background:var(--danger);color:#fff;font-family:'Bebas Neue';font-size:48px;letter-spacing:3px;
@@ -242,6 +242,7 @@
     animation:rslide .4s ease both}
   .rstat.play{color:#16240a;background:var(--draw)}
   .rstat.rest{color:#1a1405;background:var(--brand)}
+  .rstat.warmup{color:#fff;background:#6b5bd6}
   @keyframes rslide{0%{opacity:0;transform:translateX(14px) scale(.85)}60%{transform:translateX(-2px) scale(1.05)}100%{opacity:1;transform:none}}
   .icon-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:4px 6px;border-radius:8px;
     color:var(--muted)}
@@ -338,7 +339,7 @@
 <body>
 <div class="wrap">
 
-  <div class="sponsor">
+  <div class="sponsor" style="display:none">
     <a class="sp-brand" href="https://insurewithaman.ca" target="_blank" rel="noopener">
       <span class="sp-name">INSURE WITH <b>AMAN</b></span>
       <span class="sp-tag">Super Visa · Life · Critical Illness · RESP · RRSP — Brampton &amp; GTA</span>
@@ -358,7 +359,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.0</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.1</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -435,7 +436,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.0 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.1 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -461,7 +462,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.0</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.1</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Strong/Weak balancing</b></span>
@@ -619,9 +620,20 @@ function shuffle(arr){
 function nameOf(id){ const p=state.players.find(p=>p.id===id); return p?p.name:'?'; }
 
 /* ================= CORE: build a round ================= */
+const GRACE_MS = 180000;   // 3-min warm-up: a just-arrived player isn't drawn for 3 min (time to change/warm up)
+function isWarmingUp(p){
+  // only applies once the session is underway; the opening draw uses everyone
+  if(!state.round) return false;
+  const t=state.inAt[p.id];
+  return t && (Date.now()-t) < GRACE_MS;
+}
 function buildRound(){
-  const active = state.players.filter(p=>p.active);
-  if(active.length < 4) return {error:'Need at least 4 active players for one court.'};
+  const activeAll = state.players.filter(p=>p.active);
+  if(activeAll.length < 4) return {error:'Need at least 4 active players for one court.'};
+
+  // hold back players still in their 3-min warm-up — unless that leaves too few to fill a court
+  const warm = activeAll.filter(p=>!isWarmingUp(p));
+  const active = warm.length >= 4 ? warm : activeAll;
 
   // how many courts / players this round
   const numCourts = active.length >= 12 ? 3 : active.length >= 8 ? 2 : 1;
@@ -794,7 +806,10 @@ function renderRoster(){
     const div=document.createElement('div');
     div.className='player'+(p.active?' on':' off');
     let status='';
-    if(state.last && p.active) status = playSet.has(p.id)
+    if(p.active && isWarmingUp(p)){
+      const left=Math.ceil((GRACE_MS-(Date.now()-state.inAt[p.id]))/60000);
+      status = `<span class="rstat warmup">⏳ WARM-UP ${left}m</span>`;
+    } else if(state.last && p.active) status = playSet.has(p.id)
       ? '<span class="rstat play">PLAYING</span>'
       : '<span class="rstat rest">RESTING</span>';
     div.innerHTML=`
@@ -904,12 +919,23 @@ function renderTimer(){
   $('timerBar').classList.toggle('running', tRunning);
   const lbl=$('tLabel'); if(lbl && !alarmTimer) lbl.textContent = tRunning ? '❚❚ tap to stop' : '▶ press to start';
 }
+let audioKeepAlive=null;
 function primeAudio(){
   try{
     if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
     if(audioCtx.state==='suspended') audioCtx.resume();
+    // keep-alive: a silent oscillator stops iOS/Chrome from suspending the context,
+    // so the horn always fires even if the phone sat idle through the round
+    if(!audioKeepAlive){
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      g.gain.value=0.0001; o.frequency.value=30; o.connect(g).connect(audioCtx.destination);
+      o.start(); audioKeepAlive=o;
+    }
   }catch(e){}
 }
+// unlock/resume audio on ANY tap anywhere — the #1 reason the beep "sometimes" didn't fire
+document.addEventListener('pointerdown', ()=>{ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} }, true);
+document.addEventListener('visibilitychange', ()=>{ try{ if(document.visibilityState==='visible' && audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} });
 // LOUD train-horn blast — a diesel horn is a chord of several low notes played together.
 // Harsh sawtooth chord + compressor makeup gain = as loud as the phone can physically go.
 let hornComp=null;
@@ -972,6 +998,7 @@ function stopAlarm(){
   state.locked=false; save(); renderDrawButton();
 }
 function tick(){
+  try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){}  // keep audio awake every second
   tRemaining--;
   if(tRemaining<=0){ tRemaining=0; renderTimer(); fireAlarm(); return; }
   if(tRemaining===60){ $('timerBar').classList.add('warn'); beepWarn(); }      // 1-minute warning
@@ -1200,6 +1227,8 @@ renderTimer();
 renderDrawButton();
 if(SYNC_URL){ if(rosterWasReset) pushState(); pullState(); setInterval(pullState, 2500); }
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+// refresh the roster each 15s so warm-up countdowns tick down and players auto-become eligible at 3 min
+setInterval(()=>{ if(state.players.some(p=>p.active && isWarmingUp(p))) renderRoster(); }, 15000);
 </script>
 </body>
 </html>
