@@ -91,7 +91,7 @@
   .court.c2{color:var(--c2)}
   .court.c3{color:var(--c3)}
   .court-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .court-name{font-family:'Bebas Neue';font-size:24px;letter-spacing:1.5px;color:currentColor}
+  .court-name{font-family:'Bebas Neue';font-size:32px;letter-spacing:1.5px;color:currentColor}
   .court-dot{width:10px;height:10px;border-radius:50%;background:currentColor;
     box-shadow:0 0 0 4px color-mix(in srgb,currentColor 22%,transparent)}
   .team{display:flex;flex-direction:column;gap:7px}
@@ -99,15 +99,15 @@
   .vs::before,.vs::after{content:"";height:1px;flex:1;background:var(--line)}
   .vs span{font-family:'Bebas Neue';font-size:16px;letter-spacing:2px}
   .chip{
-    display:flex;align-items:center;gap:9px;color:var(--text);
-    background:color-mix(in srgb,currentColor 12%,var(--panel2));
-    border:1px solid color-mix(in srgb,currentColor 35%,transparent);
-    border-radius:11px;padding:9px 11px;font-weight:500;font-size:15px;
+    display:flex;align-items:center;gap:10px;color:#fff;
+    background:color-mix(in srgb,currentColor 18%,var(--panel2));
+    border:1px solid color-mix(in srgb,currentColor 45%,transparent);
+    border-radius:12px;padding:12px 13px;font-weight:800;font-size:21px;letter-spacing:.3px;
     animation:pop .35s ease both;
   }
-  .chip .pip{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
-  .chip-g{margin-left:auto;font-size:10px;font-weight:700;color:var(--muted);background:var(--panel);
-    border:1px solid var(--line);border-radius:9px;padding:2px 7px;min-width:22px;text-align:center}
+  .chip .pip{width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+  .chip-g{margin-left:auto;font-size:13px;font-weight:800;color:var(--text);background:var(--panel);
+    border:1px solid var(--line);border-radius:9px;padding:3px 9px;min-width:26px;text-align:center}
   .chip{cursor:pointer}
   .sub-pick{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);
     color:var(--text);border-radius:11px;padding:13px 14px;font-size:15px;font-weight:600;
@@ -124,9 +124,9 @@
   .resting h3{margin:0 0 9px;font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:700}
   .rest-list{display:flex;flex-wrap:wrap;gap:7px}
   .rest-chip{background:var(--panel2);border:1px solid var(--line);border-radius:20px;
-    padding:6px 12px;font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}
-  .rest-chip em{font-style:normal;font-size:10px;font-weight:700;color:var(--brand);
-    background:#e9b94922;border:1px solid #e9b94944;border-radius:10px;padding:2px 6px;letter-spacing:.3px}
+    padding:8px 14px;font-size:17px;font-weight:700;color:var(--text);display:inline-flex;align-items:center;gap:8px}
+  .rest-chip em{font-style:normal;font-size:12px;font-weight:700;color:var(--brand);
+    background:#e9b94922;border:1px solid #e9b94944;border-radius:10px;padding:2px 7px;letter-spacing:.3px}
   .rest-empty{color:var(--muted);font-size:13px}
 
   .note{font-size:12px;color:var(--c1);background:var(--c1-soft);border:1px solid #ffb02e44;
@@ -211,10 +211,11 @@
 
   .add-row{display:flex;gap:8px;margin-bottom:14px}
   .add-row input{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--text);
-    border-radius:11px;padding:11px 12px;font-size:15px;font-family:'DM Sans'}
+    border-radius:11px;padding:14px 14px;font-size:17px;font-weight:600;font-family:'DM Sans'}
   .add-row input:focus{outline:none;border-color:var(--draw)}
   .add-row button{background:var(--draw);color:#16240a;border:none;border-radius:11px;
-    padding:0 16px;font-weight:700;font-size:20px;cursor:pointer}
+    padding:0 20px;font-weight:800;font-size:24px;cursor:pointer}
+  .add-guest-label{font-size:14px;font-weight:800;color:var(--draw);letter-spacing:.5px;margin:2px 0 8px}
 
   .player{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line)}
   .player:last-child{border-bottom:none}
@@ -224,21 +225,21 @@
     border-radius:50%;background:#fff;transition:left .2s}
   .player.on .pl-toggle{background:var(--draw)}
   .player.on .pl-toggle::after{left:18px}
-  .pl-name{flex:1;font-size:15px;font-weight:500}
+  .pl-name{flex:1;font-size:20px;font-weight:800;color:#fff}
   .pl-time{display:block;font-size:10px;font-weight:600;color:var(--draw);margin-top:1px;letter-spacing:.3px}
   .pl-time.out{color:var(--muted)}
   .player.off .pl-name{color:var(--muted)}
   .io{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
-  .io button{border:none;padding:8px 13px;font-size:12px;font-weight:800;letter-spacing:.5px;
+  .io button{border:none;padding:11px 16px;font-size:15px;font-weight:800;letter-spacing:.5px;
     font-family:'DM Sans';cursor:pointer;background:var(--bg2);color:var(--muted);transition:all .12s}
   .io button:active{transform:scale(.94)}
   .io .io-in.act{background:var(--draw);color:#16240a}
   .io .io-out.act{background:var(--danger);color:#fff}
   .pl-name input{width:100%;background:var(--bg2);border:1px solid var(--draw);color:var(--text);
     border-radius:8px;padding:6px 8px;font-size:15px;font-family:'DM Sans'}
-  .pl-games{font-size:11px;color:var(--muted);background:var(--bg2);border-radius:20px;
-    padding:3px 9px;flex:none}
-  .rstat{font-size:10px;font-weight:800;letter-spacing:.5px;border-radius:9px;padding:3px 9px;flex:none;
+  .pl-games{font-size:14px;font-weight:700;color:var(--text);background:var(--bg2);border-radius:20px;
+    padding:4px 11px;flex:none}
+  .rstat{font-size:12px;font-weight:800;letter-spacing:.5px;border-radius:9px;padding:4px 10px;flex:none;
     animation:rslide .4s ease both}
   .rstat.play{color:#16240a;background:var(--draw)}
   .rstat.rest{color:#1a1405;background:var(--brand)}
@@ -359,7 +360,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.1</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.2</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -376,6 +377,12 @@
         <button id="setNamesBtn" class="accent">✎ Names</button>
       </div>
 
+      <div class="add-guest-label">➕ ADD A GUEST / NEW PLAYER (anyone can — no code needed)</div>
+      <div class="add-row">
+        <input id="newName" type="text" placeholder="Type guest name…" maxlength="22">
+        <button id="addBtn">＋</button>
+      </div>
+
       <div class="bulk" id="bulkBox">
         <textarea id="bulkText" placeholder="Aman&#10;Satish&#10;Balli&#10;…one name per line"></textarea>
         <div class="bulk-actions">
@@ -386,11 +393,6 @@
       </div>
 
       <div id="playerList"></div>
-
-      <div class="add-row">
-        <input id="newName" type="text" placeholder="Add a new player…" maxlength="22">
-        <button id="addBtn">＋</button>
-      </div>
       <p class="hint">As each player arrives they tap <b style="color:var(--draw)">IN</b>; tap <b style="color:var(--danger)">OUT</b> when they leave. Only players set to IN get drawn into courts.</p>
     </div>
   </div>
@@ -436,7 +438,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.1 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.2 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -462,7 +464,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.1</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.2</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Strong/Weak balancing</b></span>
@@ -1162,7 +1164,9 @@ let holdT=null, holdFired=false;
 $('addBtn').onclick=()=>{
   const inp=$('newName');const v=inp.value.trim();
   if(!v)return;
-  state.players.push({id:nextId++,name:v,active:true,tier:'strong'});
+  const gid=nextId++;
+  state.players.push({id:gid,name:v,active:true,tier:'strong'});
+  state.inAt[gid]=Date.now();   // guest checked in now (gets the 3-min warm-up mid-session)
   inp.value='';save();syncPeople();
 };
 $('newName').onkeydown=e=>{if(e.key==='Enter')$('addBtn').click();};
