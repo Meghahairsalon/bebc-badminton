@@ -109,6 +109,9 @@
   .chip-g{margin-left:auto;font-size:13px;font-weight:800;color:var(--text);background:var(--panel);
     border:1px solid var(--line);border-radius:9px;padding:3px 9px;min-width:26px;text-align:center}
   .chip{cursor:pointer}
+  .swap-hint{display:none;text-align:center;font-size:14px;font-weight:600;color:var(--muted);
+    background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px}
+  .swap-hint.show{display:block}
   .sub-pick{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);
     color:var(--text);border-radius:11px;padding:13px 14px;font-size:15px;font-weight:600;
     margin-bottom:8px;cursor:pointer;font-family:'DM Sans'}
@@ -365,7 +368,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.3</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.4</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -403,6 +406,7 @@
   </div>
 
   <div class="courts" id="courts"></div>
+  <div class="swap-hint" id="swapHint">👆 Someone has to leave? Tap their name on the court to swap in a waiting player.</div>
 
   <div class="note" id="note"></div>
 
@@ -443,12 +447,12 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.3 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.4 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
     <div class="lock-card">
-      <div class="lock-title">Substitute</div>
+      <div class="lock-title">Swap player</div>
       <div class="coach-hint" id="subWho">Who comes in?</div>
       <div id="subList"></div>
       <button class="lock-close" id="subCancel">Cancel</button>
@@ -469,7 +473,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.3</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.4</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Strong/Weak balancing</b></span>
@@ -766,6 +770,7 @@ function renderCourts(){
   const wrap=$('courts');
   $('roundNum').textContent=state.round;   // always keep the counter in sync
   const r=state.last;
+  { const sh=$('swapHint'); if(sh) sh.classList.toggle('show', !!r); }   // show swap hint only when players are on court
   if(!r){
     wrap.innerHTML=`
      <div class="court c1"><div class="court-head"><span class="court-name">Court 1</span><span class="court-dot"></span></div>
@@ -1069,7 +1074,7 @@ let pendingSubX=null;
 function openSub(xId){
   if(!state.last) return;
   pendingSubX=xId;
-  $('subWho').textContent='Who comes in for '+nameOf(xId)+'?';
+  $('subWho').textContent=nameOf(xId)+' is leaving — tap who takes their spot:';
   const list=$('subList'); list.innerHTML='';
   const sitting=(state.last.resting||[]).filter(id=>{const p=state.players.find(x=>x.id===id);return p&&p.active;})
                   .sort((a,b)=>nameOf(a).localeCompare(nameOf(b)));
