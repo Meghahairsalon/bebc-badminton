@@ -1,6 +1,6 @@
 // BEBC Badminton — offline service worker
 // Caches the app so it opens and runs with no internet at the gym.
-const CACHE = 'bebc-v13';
+const CACHE = 'bebc-v14';
 self.addEventListener('install', e => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html', './preview.png'])).catch(()=>{}));

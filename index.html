@@ -375,7 +375,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v5.0</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v5.1</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -454,7 +454,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v5.0 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v5.1 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -480,7 +480,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v5.0</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v5.1</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -714,8 +714,8 @@ function buildRound(){
     // forms only legal mirror courts (equal totals), guarantees each strong player a
     // pure game, and sits the odd weak player fairly. (See levelDraw above.)
     const bandOf = id => levelBand(ratingOf(id));
-    const elig = sorted.map(p=>p.id);   // fairness order, full eligible pool (engine chooses who sits)
-    const res = levelDraw(elig, numCourts, bandOf);
+    const elig = sorted.map(p=>p.id);   // full eligible pool (engine picks who plays + arranges)
+    const res = levelDraw(elig, numCourts, bandOf, ratingOf);
     const restIds = res.resting.concat(forcedRest.map(p=>p.id));
     return {courts:goodCourtOrder(res.courts), resting:restIds, score:0, matched:true,
             w:{p:100,c:5}, warn:res.warn, pureThisRound:res.pureThisRound};
@@ -748,60 +748,61 @@ const RATING_DEFAULT = 80;   // used when a player has no rating yet and balanci
    own game); every 100/85/75 is guaranteed at least one, late arrivals too. */
 const TIERS = [100,85,75,65];
 function levelBand(r){ let best=TIERS[0],bd=Infinity; for(const t of TIERS){const d=Math.abs(r-t);if(d<bd){bd=d;best=t;}} return best; }
-function weightedPick(arr,weights){ let tot=0;for(const w of weights)tot+=w; let x=Math.random()*tot; for(let i=0;i<arr.length;i++){x-=weights[i];if(x<=0)return arr[i];} return arr[arr.length-1]; }
-function bestPartnerSplit(four){
-  const splits=[[[0,1],[2,3]],[[0,2],[1,3]],[[0,3],[1,2]]]; let best=null,bv=Infinity;
-  for(const s of splits){ const t1=[four[s[0][0]],four[s[0][1]]],t2=[four[s[1][0]],four[s[1][1]]];
-    const v=(state.partner[key(t1[0],t1[1])]||0)+(state.partner[key(t2[0],t2[1])]||0); if(v<bv){bv=v;best=[t1,t2];} }
-  return best;
-}
-// elig = eligible player ids, already in fairness order (best-to-play first)
-function levelDraw(elig, numCourts, bandOf){
-  const LOW=TIERS[TIERS.length-1];
-  const prio={}; elig.forEach((id,i)=>prio[id]=i);
+
+/* The draw tries thousands of possible line-ups and keeps the single best one for
+   WHOEVER is actually on court this round. When a clean skill mix is present it
+   lands on exact mirror courts and pure same-level games (the ideal rules). When
+   the mix that showed up is awkward, it COMPROMISES to the most even courts
+   possible — so a game always goes out and nobody is left standing. Scoring order:
+     1) teams on a court as even as possible (smallest total gap)   ← most important
+     2) a true mirror (same levels both sides) preferred
+     3) weak (65) players never paired together, never an all-weak court   ← hard
+     4) reward giving a player the same-level ("pure") game they're still owed
+     5) avoid repeat partners / repeat courts (variety) */
+function levelDraw(elig, numCourts, bandOf, ratingOf){
+  const N=numCourts*4, LOW=TIERS[TIERS.length-1];
   const needPure=id=> bandOf(id)!==LOW && !state.pureDone[id];
-  const templates=cnt=>{ const out=[];
-    for(let i=0;i<TIERS.length;i++){ const a=TIERS[i];
-      if(a!==LOW && cnt[a]>=4) out.push([a,a]);
-      for(let j=i+1;j<TIERS.length;j++){ const b=TIERS[j]; if(cnt[a]>=2 && cnt[b]>=2) out.push([a,b]); } }
-    return out; };
-  function buildOnce(){
-    const byLevel={}; TIERS.forEach(t=>byLevel[t]=[]);
-    shuffle([...elig]).forEach(id=>byLevel[bandOf(id)].push(id));
-    TIERS.forEach(t=>byLevel[t].sort((x,y)=>(prio[x]-prio[y])+(Math.random()-0.5)*1.5));
-    const cnt={}; TIERS.forEach(t=>cnt[t]=byLevel[t].length);
-    const courts=[];
-    for(let c=0;c<numCourts;c++){
-      const tpl=templates(cnt); if(!tpl.length) break;
-      let chosen=null, pureDebt=null;
-      for(const t of tpl.filter(t=>t[0]===t[1])){ if(byLevel[t[0]].filter(id=>needPure(id)).length>=4){pureDebt=t;break;} }
-      if(pureDebt && Math.random()<0.92) chosen=pureDebt;
-      else chosen=weightedPick(tpl, tpl.map(t=>t[0]===t[1]?2:1));
-      const take=(lvl,n,pref)=>{ let list=byLevel[lvl];
-        if(pref) list=[...list].sort((x,y)=>(needPure(y)?1:0)-(needPure(x)?1:0));
-        const picked=list.slice(0,n); byLevel[lvl]=byLevel[lvl].filter(id=>!picked.includes(id)); cnt[lvl]-=picked.length; return picked; };
-      if(chosen[0]===chosen[1]){ const pr=bestPartnerSplit(take(chosen[0],4,true)); courts.push({team1:pr[0],team2:pr[1],pure:true}); }
-      else { const hi=take(chosen[0],2,false),lo=take(chosen[1],2,false); courts.push({team1:[hi[0],lo[0]],team2:[hi[1],lo[1]],pure:false}); }
+  const lastRest=new Set(state.last?state.last.resting:[]);
+  const g=id=>state.games[id]||0;
+  // fairness: fewest games → sat-out-last → most total sits → random (fresh each try for variety)
+  const fairness=()=> shuffle([...elig]).sort((x,y)=>{
+      if(g(x)!==g(y))return g(x)-g(y);
+      const xr=lastRest.has(x)?0:1,yr=lastRest.has(y)?0:1; if(xr!==yr)return xr-yr;
+      return (state.rests[y]||0)-(state.rests[x]||0);
+    }).slice(0,N);
+  const pureCourt=ct=>{ const b=[...ct.team1,...ct.team2].map(bandOf); return b[0]!==LOW && b.every(x=>x===b[0]); };
+  function scoreOf(courts){
+    let s=0;
+    for(const ct of courts){
+      const t1=ratingOf(ct.team1[0])+ratingOf(ct.team1[1]), t2=ratingOf(ct.team2[0])+ratingOf(ct.team2[1]);
+      s+=100*Math.abs(t1-t2);                                       // 1) keep the two teams even
+      const l1=ct.team1.map(bandOf).sort((a,b)=>b-a), l2=ct.team2.map(bandOf).sort((a,b)=>b-a);
+      if(l1[0]!==l2[0]||l1[1]!==l2[1]) s+=250;                      // 2) prefer a true mirror
+      if(ct.team1.filter(id=>bandOf(id)===LOW).length>1) s+=1e6;    // 3) never two weak on a team
+      if(ct.team2.filter(id=>bandOf(id)===LOW).length>1) s+=1e6;
+      if([...ct.team1,...ct.team2].every(id=>bandOf(id)===LOW)) s+=1e6;   // never an all-weak court
+      if(pureCourt(ct)) [...ct.team1,...ct.team2].forEach(id=>{ if(needPure(id)) s-=800; });  // 4) owed pure game
+      s+=30*((state.partner[key(ct.team1[0],ct.team1[1])]||0)+(state.partner[key(ct.team2[0],ct.team2[1])]||0));  // 5)
+      const f=[...ct.team1,...ct.team2];
+      for(let i=0;i<4;i++)for(let j=i+1;j<4;j++) s+=3*(state.court[key(f[i],f[j])]||0);
     }
-    const placed=new Set(); courts.forEach(ct=>[...ct.team1,...ct.team2].forEach(id=>placed.add(id)));
-    return {courts, resting:elig.filter(id=>!placed.has(id))};
+    return s;
   }
-  function scoreOf(sol){ let s=0; const placed=new Set(); sol.courts.forEach(ct=>[...ct.team1,...ct.team2].forEach(id=>placed.add(id)));
-    const lastRest=new Set(state.last?state.last.resting:[]);
-    elig.forEach(id=>{ if(!placed.has(id)){ if(lastRest.has(id)) s-=1000; s-=(elig.length-prio[id])*4; } });
-    sol.courts.forEach(ct=>{ if(ct.pure)[...ct.team1,...ct.team2].forEach(id=>{ if(needPure(id)) s+=600; }); });
-    s+=sol.courts.length*5000;
-    sol.courts.forEach(ct=>{ s-=40*((state.partner[key(ct.team1[0],ct.team1[1])]||0)+(state.partner[key(ct.team2[0],ct.team2[1])]||0));
-      const f=[...ct.team1,...ct.team2]; for(let i=0;i<4;i++)for(let j=i+1;j<4;j++) s-=3*(state.court[key(f[i],f[j])]||0); });
-    return s; }
-  let best=null,bestS=-Infinity;
-  for(let i=0;i<4000;i++){ const sol=buildOnce(); const sc=scoreOf(sol); if(sc>bestS){bestS=sc;best=sol;} }
-  const desired=Math.min(numCourts,Math.floor(elig.length/4));
-  const warn = best.courts.length<desired
-    ? "Couldn't balance every court this round — these skill levels don't pair up evenly. Tap the ROUND number 5× (PIN 7156) and nudge a rating."
+  let best=null,bestS=Infinity,bestPlay=null;
+  for(let i=0;i<8000;i++){
+    const play=fairness();
+    const s=shuffle([...play]); const courts=[];
+    for(let c=0;c<numCourts;c++){ const f=s.slice(c*4,c*4+4); courts.push({team1:[f[0],f[1]],team2:[f[2],f[3]]}); }
+    const sc=scoreOf(courts);
+    if(sc<bestS){bestS=sc;best=courts;bestPlay=play;}
+  }
+  const playSet=new Set(bestPlay);
+  const resting=elig.filter(id=>!playSet.has(id));
+  const maxImb=Math.max(0,...best.map(ct=>Math.abs((ratingOf(ct.team1[0])+ratingOf(ct.team1[1]))-(ratingOf(ct.team2[0])+ratingOf(ct.team2[1])))));
+  const warn = maxImb>=15
+    ? "Odd skill mix this round — the app made the courts as even as it could. Tap any player to move them, or nudge a rating in the 7156 panel."
     : null;
-  return {courts:best.courts, resting:best.resting, warn,
-          pureThisRound: best.courts.filter(c=>c.pure).flatMap(c=>[...c.team1,...c.team2])};
+  return {courts:best, resting, warn, pureThisRound: best.filter(pureCourt).flatMap(ct=>[...ct.team1,...ct.team2])};
 }
 
 // Court 2 is the obstruction-free "good" court. Give it to the foursome that has
