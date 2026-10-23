@@ -186,6 +186,12 @@
   .alarm-stop.show{display:flex;align-items:center;justify-content:center}
 
   /* ---- draw button ---- */
+  .draw-count{
+    text-align:center;margin:2px 0 10px;padding:12px;border-radius:14px;
+    background:linear-gradient(135deg,#1f6feb22,#c6ff4a18);border:1.5px solid var(--draw);
+    color:var(--text);font-family:'DM Sans';font-weight:700;font-size:19px;letter-spacing:.3px;
+  }
+  .draw-count b{font-family:'Bebas Neue';font-size:27px;color:var(--draw);letter-spacing:1px;vertical-align:-1px;margin:0 2px}
   .draw-btn{
     width:100%;border:none;cursor:pointer;border-radius:18px;
     background:linear-gradient(135deg,var(--draw),#9be01f);
@@ -375,7 +381,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v5.2</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v5.3</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -433,6 +439,7 @@
   </div>
   <button class="alarm-stop" id="alarmStop">⏱ TIME UP<br>TAP TO STOP</button>
 
+  <div class="draw-count" id="drawCount"></div>
   <button class="draw-btn" id="drawBtn">🏸 DRAW NEXT ROUND</button>
   <div class="row-btns">
     <button class="ghost" id="resetStatsBtn">↺ Reset rounds & history</button>
@@ -454,7 +461,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v5.2 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v5.3 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -480,7 +487,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v5.2</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v5.3</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -961,6 +968,14 @@ function updateCount(){
     else sync = syncOk ? ' · 🟢 live' : ' · 🔴 connecting';
   }
   $('plCount').textContent=`· ${a} in / ${state.players.length} players${sync}`;
+  const dc=$('drawCount');
+  if(dc){
+    const courts = a>=12?3 : a>=8?2 : a>=4?1 : 0;
+    const sitting = courts? a-courts*4 : a;
+    dc.innerHTML = a<4
+      ? `👥 <b>${a}</b> IN — need ${4-a} more to start`
+      : `👥 <b>${a}</b> players IN · <b>${courts}</b> court${courts>1?'s':''} · ${sitting} sitting`;
+  }
 }
 window.addEventListener('online', ()=>{ updateCount(); if(SYNC_URL) pushState(); });
 window.addEventListener('offline', updateCount);
