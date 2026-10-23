@@ -372,7 +372,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.7</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.8</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -451,7 +451,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.7 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.8 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -477,7 +477,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.7</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.8</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -681,14 +681,20 @@ function buildRound(){
   const ratingOf = id => { const p=state.players.find(x=>x.id===id); const r=p&&typeof p.rating==='number'?p.rating:NaN; return isNaN(r)?RATING_DEFAULT:r; };
 
   if(lvl){
-    // RATING MODE — put similar-level players on the same court, then split each court
-    // into two BALANCED teams (strongest + weakest vs the middle two), so both sides are even.
+    // RATING MODE — put similar-level players on the same court, then split each court two ways,
+    // ALTERNATING every round so both kinds of games happen:
+    //   • balanced round: strongest+weakest vs the middle two (100+60 vs 100+60)
+    //   • same-level round: two strongest together vs two weakest (100+100 vs 85+85) → strong get a pure game
     const pool=[...playing].sort((a,b)=> (ratingOf(b.id)-ratingOf(a.id)) || (Math.random()-0.5));
+    const sameLevelRound = (state.round % 2 === 0);   // flips each draw
     const courts=[];
     for(let c=0;c<numCourts;c++){
       const slice=pool.slice(c*4,c*4+4); if(slice.length<4) break;
       const four=slice.map(p=>p.id).sort((x,y)=> ratingOf(y)-ratingOf(x));  // high → low
-      courts.push({ team1:[four[0],four[3]], team2:[four[1],four[2]] });     // balanced split
+      const teams = sameLevelRound
+        ? { team1:[four[0],four[1]], team2:[four[2],four[3]] }   // strong together vs weak together
+        : { team1:[four[0],four[3]], team2:[four[1],four[2]] };  // balanced
+      courts.push(teams);
     }
     return {courts:goodCourtOrder(courts), resting:resting.map(p=>p.id), score:0, matched:true, w:{p:100,c:5}};
   }
