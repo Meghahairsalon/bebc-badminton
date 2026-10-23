@@ -329,7 +329,10 @@
   .coach-hint{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px;text-align:center}
   .coach-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
   .coach-row:last-child{border-bottom:none}
-  .coach-row .cn{flex:1;font-size:15px;font-weight:500}
+  .coach-row .cn{flex:1;font-size:16px;font-weight:600}
+  .rate-in{width:74px;flex:none;background:var(--bg2);border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:10px;font-size:18px;font-weight:800;text-align:center;font-family:'DM Sans'}
+  .rate-in:focus{outline:none;border-color:var(--draw)}
   .lvl{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
   .lvl button{border:none;padding:7px 12px;font-size:12px;font-weight:800;font-family:'DM Sans';
     cursor:pointer;background:var(--bg2);color:var(--muted)}
@@ -369,7 +372,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.6</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.7</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -448,7 +451,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.6 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.7 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -474,10 +477,10 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.6</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.7</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
-            <span><b>Strong/Weak balancing</b></span>
+            <span><b>Skill balancing (ratings)</b></span>
             <div class="seg"><button id="lvlOn">ON</button><button id="lvlOff">OFF</button></div>
           </div>
           <div id="lvlControls">
@@ -674,48 +677,24 @@ function buildRound(){
   const playing = sorted.slice(0,numPlaying);
   const resting = active.filter(p=>!playing.includes(p)).concat(forcedRest);
 
-  const lvl = state.levelOn===true;   // master switch: when off, ignore all weak/strong tags
-  const tierOf=id=>{ if(!lvl) return 'strong'; const p=state.players.find(x=>x.id===id);return p&&p.tier==='weak'?'weak':'strong';};
-  const matched = lvl && state.matchNext !== false;   // this round's mode
+  const lvl = state.levelOn===true;   // master switch: ON = balance teams by each player's rating
+  const ratingOf = id => { const p=state.players.find(x=>x.id===id); const r=p&&typeof p.rating==='number'?p.rating:NaN; return isNaN(r)?RATING_DEFAULT:r; };
 
-  // best 2v2 split of a foursome: fewest repeat partners, avoid B+B when mixed
-  const bestPairs=(four)=>{
-    const sp=[[[four[0],four[1]],[four[2],four[3]]],
-              [[four[0],four[2]],[four[1],four[3]]],
-              [[four[0],four[3]],[four[1],four[2]]]];
-    let bp=sp[0], bs=Infinity;
-    for(const s of sp){ let sc=0;
-      s.forEach(tm=>{ sc+=100*(state.partner[key(tm[0],tm[1])]||0);
-        if(tierOf(tm[0])==='weak'&&tierOf(tm[1])==='weak') sc+=40; });
-      if(sc<bs){bs=sc;bp=s;} }
-    return bp;
-  };
-
-  if(matched){
-    // LEVEL-MATCHED: whole single-level courts — strong court vs strong court, B-grade vs B-grade
-    const byFair = arr => shuffle([...arr]).sort((a,b)=>{
-      if(g(a.id)!==g(b.id)) return g(a.id)-g(b.id);
-      const ar=lastRest.has(a.id)?0:1, br=lastRest.has(b.id)?0:1; if(ar!==br) return ar-br;
-      return (state.rests[b.id]||0)-(state.rests[a.id]||0);
-    });
-    let S=byFair(active.filter(p=>tierOf(p.id)==='strong')).map(p=>p.id);
-    let W=byFair(active.filter(p=>tierOf(p.id)==='weak')).map(p=>p.id);
-    const courts=[], used=[];
+  if(lvl){
+    // RATING MODE — put similar-level players on the same court, then split each court
+    // into two BALANCED teams (strongest + weakest vs the middle two), so both sides are even.
+    const pool=[...playing].sort((a,b)=> (ratingOf(b.id)-ratingOf(a.id)) || (Math.random()-0.5));
+    const courts=[];
     for(let c=0;c<numCourts;c++){
-      let four;
-      if(S.length>=4 && (S.length>=W.length || W.length<4)) four=S.splice(0,4);
-      else if(W.length>=4) four=W.splice(0,4);
-      else { const rem=S.concat(W); four=rem.slice(0,4);
-        four.forEach(id=>{ let i=S.indexOf(id); if(i>=0)S.splice(i,1); else { i=W.indexOf(id); if(i>=0)W.splice(i,1);} }); }
-      if(four.length<4) break;
-      const pr=bestPairs(four); courts.push({team1:pr[0],team2:pr[1]}); used.push(...four);
+      const slice=pool.slice(c*4,c*4+4); if(slice.length<4) break;
+      const four=slice.map(p=>p.id).sort((x,y)=> ratingOf(y)-ratingOf(x));  // high → low
+      courts.push({ team1:[four[0],four[3]], team2:[four[1],four[2]] });     // balanced split
     }
-    const restM=active.filter(p=>!used.includes(p.id));
-    return {courts:goodCourtOrder(courts), resting:restM.map(p=>p.id), score:0, matched:true, w:{p:100,c:5}};
+    return {courts:goodCourtOrder(courts), resting:resting.map(p=>p.id), score:0, matched:true, w:{p:100,c:5}};
   }
 
-  // MIXED: balanced teams; spread strong/weak evenly across courts (no clustering)
-  const W_PARTNER=100, W_COURT=5, W_WEAK=150, W_BAL=60;
+  // balancing OFF — fair, varied teams (fewest repeat partners / shared courts)
+  const W_PARTNER=100, W_COURT=5;
   let best=null, bestScore=Infinity;
   const ids=playing.map(p=>p.id); const tries=2500;
   for(let t=0;t<tries;t++){
@@ -723,11 +702,6 @@ function buildRound(){
     for(let c=0;c<numCourts;c++){
       const four=s.slice(c*4,c*4+4); const team1=[four[0],four[1]],team2=[four[2],four[3]];
       score+=W_PARTNER*((state.partner[key(team1[0],team1[1])]||0)+(state.partner[key(team2[0],team2[1])]||0));
-      if(tierOf(team1[0])==='weak'&&tierOf(team1[1])==='weak') score+=W_WEAK;
-      if(tierOf(team2[0])==='weak'&&tierOf(team2[1])==='weak') score+=W_WEAK;
-      // court balance: prefer 2 strong + 2 weak; punish 3-1 / 4-0 courts
-      const strongN=four.filter(id=>tierOf(id)==='strong').length;
-      score += W_BAL*Math.abs(strongN-2);
       for(let i=0;i<4;i++)for(let j=i+1;j<4;j++) score+=W_COURT*(state.court[key(four[i],four[j])]||0);
       cc.push({team1,team2});
     }
@@ -735,6 +709,7 @@ function buildRound(){
   }
   return {courts:goodCourtOrder(best), resting:resting.map(p=>p.id), score:bestScore, matched:false, w:{p:W_PARTNER,c:W_COURT}};
 }
+const RATING_DEFAULT = 80;   // used when a player has no rating yet and balancing is ON
 
 // Court 2 is the obstruction-free "good" court. Give it to the foursome that has
 // had the least Court-2 time so far, so it rotates fairly across everyone.
@@ -1196,32 +1171,23 @@ $('lockOverlay').onclick=e=>{ if(e.target===$('lockOverlay')) $('lockOverlay').c
 
 function openCoach(){
   $('pinView').style.display='none'; $('coachView').style.display='block';
-  const on=state.levelOn===true, mm=state.matchNext!==false, aa=state.autoAlt!==false;
+  const on=state.levelOn===true;
   $('lvlOn').classList.toggle('act',on); $('lvlOff').classList.toggle('act',!on);
   $('lvlOn').onclick=()=>{state.levelOn=true;save();openCoach();};
   $('lvlOff').onclick=()=>{state.levelOn=false;save();openCoach();};
-  $('lvlControls').style.opacity = on?'1':'0.4';
-  $('lvlControls').style.pointerEvents = on?'auto':'none';
-  $('coachList').style.opacity = on?'1':'0.4';
-  $('lvlHint').textContent = on
-    ? "Levels are hidden from players. Set each player's level below."
-    : "Balancing is OFF — courts are drawn purely fair & random. Turn ON to use the levels below.";
-  $('fmtMatched').classList.toggle('act',mm); $('fmtMixed').classList.toggle('act',!mm);
-  $('fmtMatched').onclick=()=>{state.matchNext=true;save();openCoach();};
-  $('fmtMixed').onclick=()=>{state.matchNext=false;save();openCoach();};
-  $('altOn').classList.toggle('act',aa); $('altOff').classList.toggle('act',!aa);
-  $('altOn').onclick=()=>{state.autoAlt=true;save();openCoach();};
-  $('altOff').onclick=()=>{state.autoAlt=false;save();openCoach();};
+  const lc=$('lvlControls'); if(lc) lc.style.display='none';   // old match/mixed toggles not used in rating mode
+  $('coachList').style.opacity = on?'1':'0.45';
+  $('lvlHint').innerHTML = on
+    ? "Type each player's rating (0–100). Blank = 80. The draw makes both teams on a court even — pairs a strong with a weak, and puts similar levels together."
+    : "Balancing is OFF — teams are drawn fair &amp; random. Turn ON to use ratings.";
   const list=$('coachList'); list.innerHTML='';
   [...state.players].sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
     const row=document.createElement('div'); row.className='coach-row';
+    const val = (typeof p.rating==='number') ? p.rating : '';
     row.innerHTML=`<span class="cn">${escapeHtml(p.name)}</span>
-      <div class="lvl">
-        <button class="s${p.tier!=='weak'?' act':''}" data-l="strong">STRONG</button>
-        <button class="w${p.tier==='weak'?' act':''}" data-l="weak">WEAK</button>
-      </div>`;
-    row.querySelector('[data-l="strong"]').onclick=()=>{p.tier='strong';save();openCoach();};
-    row.querySelector('[data-l="weak"]').onclick=()=>{p.tier='weak';save();openCoach();};
+      <input class="rate-in" type="number" inputmode="numeric" min="0" max="100" placeholder="—" value="${val}">`;
+    const inp=row.querySelector('.rate-in');
+    inp.onchange=()=>{ const v=inp.value.trim(); if(v==='') delete p.rating; else { let n=Math.max(0,Math.min(100,parseInt(v,10)||0)); p.rating=n; } save(); };
     list.appendChild(row);
   });
 }
