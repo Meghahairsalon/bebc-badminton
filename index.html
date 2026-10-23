@@ -381,7 +381,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v5.4</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v5.5</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -461,7 +461,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v5.4 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v5.5 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -487,7 +487,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v5.4</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v5.5</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -1067,56 +1067,63 @@ document.addEventListener('pointerdown', ()=>{ try{ if(audioCtx && audioCtx.stat
 document.addEventListener('visibilitychange', ()=>{ try{ if(document.visibilityState==='visible' && audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} });
 // LOUD train-horn blast — a diesel horn is a chord of several low notes played together.
 // Harsh sawtooth chord + compressor makeup gain = as loud as the phone can physically go.
-let hornComp=null;
+// Shared "loud bus": compressor + big makeup gain = as loud and harsh as the phone can go.
+let loudBusNode=null;
+function loudBus(){
+  if(!loudBusNode){
+    const comp=audioCtx.createDynamicsCompressor();
+    comp.threshold.value=-32; comp.knee.value=3; comp.ratio.value=16;
+    comp.attack.value=0.001; comp.release.value=0.12;
+    const boost=audioCtx.createGain(); boost.gain.value=3.8;   // makeup gain → maximum loudness
+    comp.connect(boost).connect(audioCtx.destination);
+    loudBusNode=comp;
+  }
+  return loudBusNode;
+}
+// BIG EMERGENCY SIREN — a harsh two-tone wail (sawtooth sweeping up & down, plus a
+// detuned twin and a square sub) through the loud bus. A sweeping siren cuts through a
+// shouting hall far better than a bell. Called on a ~1s loop so it never stops to breathe.
 function beep(){
   if(!audioCtx) return;
   try{
-    if(!hornComp){
-      hornComp=audioCtx.createDynamicsCompressor();
-      hornComp.threshold.value=-24; hornComp.knee.value=6; hornComp.ratio.value=12;
-      hornComp.attack.value=0.002; hornComp.release.value=0.2;
-      const boost=audioCtx.createGain(); boost.gain.value=2.6;   // makeup gain → maximum loudness
-      hornComp.connect(boost).connect(audioCtx.destination);
-    }
-    // bright, pleasant BELL — a quick "ding · ding · ding" (like a ring/boxing bell), loud and clear
-    const t0=audioCtx.currentTime;
-    const ding=(start)=>{
-      const base=1046.5;                              // high C — cuts through a noisy hall
-      const partials=[[1,1],[2,0.6],[3,0.4],[4.2,0.25],[5.4,0.18]]; // bell-like overtones
-      partials.forEach(([mult,amp])=>{
-        const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-        o.type='sine'; o.frequency.value=base*mult;
-        g.gain.setValueAtTime(0.0001,start);
-        g.gain.exponentialRampToValueAtTime(amp,start+0.004);   // sharp strike
-        g.gain.exponentialRampToValueAtTime(0.0001,start+0.55); // ring-out
-        o.connect(g).connect(hornComp);
-        o.start(start); o.stop(start+0.6);
-      });
-    };
-    ding(t0); ding(t0+0.30); ding(t0+0.60);   // three quick rings per blast
+    const bus=loudBus(); const t0=audioCtx.currentTime, span=1.0;
+    const voices=[ {d:0,type:'sawtooth',amp:0.95}, {d:9,type:'sawtooth',amp:0.75}, {d:-9,type:'square',amp:0.55} ];
+    voices.forEach(v=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type=v.type; o.detune.value=v.d;
+      o.frequency.setValueAtTime(600,t0);
+      o.frequency.exponentialRampToValueAtTime(1360,t0+span*0.5);   // wail UP
+      o.frequency.exponentialRampToValueAtTime(600, t0+span);       // wail DOWN
+      g.gain.setValueAtTime(v.amp,t0);
+      g.gain.setValueAtTime(v.amp,t0+span-0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+span);
+      o.connect(g).connect(bus);
+      o.start(t0); o.stop(t0+span+0.02);
+    });
   }catch(e){}
 }
-function beepShort(freq=820,dur=0.15,vol=0.55){
+// small warning tone; thru=true sends it through the loud bus for the final punchy beeps
+function beepShort(freq=820,dur=0.15,vol=0.55,thru=false){
   if(!audioCtx) return;
   try{
     const o=audioCtx.createOscillator(), g=audioCtx.createGain(), t=audioCtx.currentTime;
-    o.type='sine'; o.frequency.value=freq;
+    o.type= thru?'sawtooth':'sine'; o.frequency.value=freq;
     g.gain.setValueAtTime(0.0001,t);
     g.gain.exponentialRampToValueAtTime(vol,t+0.01);
     g.gain.setValueAtTime(vol,t+dur*0.7);
     g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-    o.connect(g).connect(audioCtx.destination);
+    o.connect(g).connect(thru?loudBus():audioCtx.destination);
     o.start(t); o.stop(t+dur+0.02);
   }catch(e){}
 }
-function beepWarn(){ beepShort(760,0.18,0.6); setTimeout(()=>beepShort(760,0.18,0.6),230); }
+function beepWarn(){ beepShort(720,0.16,0.5); setTimeout(()=>beepShort(720,0.16,0.5),240); setTimeout(()=>beepShort(720,0.16,0.5),480); }
 function fireAlarm(){
   tRunning=false; clearInterval(tInterval);
   $('timerBar').classList.remove('running','warn'); $('timerBar').classList.add('firing');
   $('alarmStop').classList.add('show');
   primeAudio(); beep();
-  alarmTimer=setInterval(beep,1200);
-  clearTimeout(alarmAutoStop); alarmAutoStop=setTimeout(stopAlarm, 30000);  // never blinks forever
+  alarmTimer=setInterval(beep,1000);   // continuous wail
+  clearTimeout(alarmAutoStop); alarmAutoStop=setTimeout(stopAlarm, 40000);  // never blinks forever
   state.locked=false; save(); renderDrawButton();   // round over → next draw unlocked
 }
 function stopAlarm(){
@@ -1130,10 +1137,16 @@ function tick(){
   try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){}  // keep audio awake every second
   tRemaining--;
   if(tRemaining<=0){ tRemaining=0; renderTimer(); fireAlarm(); return; }
-  if(tRemaining===60){ $('timerBar').classList.add('warn'); beepWarn(); }      // 1-minute warning
-  else if(tRemaining<60){
-    if(tRemaining<=5) beepShort(950,0.18,0.6);                                 // final 5s, each second
-    else if(tRemaining%10===0) beepShort(820,0.14,0.5);                        // every 10s in last minute
+  if(tRemaining===60){ $('timerBar').classList.add('warn'); beepWarn(); }      // 1-min soft heads-up
+  else if(tRemaining<=30 && tRemaining>10){
+    if(tRemaining%5===0) beepShort(780,0.16,0.5);                              // soft beep every 5s from 0:30
+  } else if(tRemaining<=10 && tRemaining>=1){
+    // final countdown: one beep each second, rising pitch & volume → runs into the siren
+    const step=10-tRemaining;                                                  // 0 … 9
+    const freq=720+step*60, vol=Math.min(0.95,0.55+step*0.05);
+    const loud=tRemaining<=3;                                                  // last 3s punch through the loud bus
+    beepShort(freq,0.18,vol,loud);
+    if(loud) setTimeout(()=>beepShort(freq+90,0.16,vol,true),180);             // double-beep the last 3s
   }
   renderTimer();
 }
