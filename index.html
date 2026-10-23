@@ -333,6 +333,9 @@
   .rate-in{width:74px;flex:none;background:var(--bg2);border:1px solid var(--line);color:var(--text);
     border-radius:10px;padding:10px;font-size:18px;font-weight:800;text-align:center;font-family:'DM Sans'}
   .rate-in:focus{outline:none;border-color:var(--draw)}
+  .combo-row{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .combo-row .cmb{width:56px;padding:9px 6px;font-size:17px}
+  .combo-vs{font-weight:800;color:var(--muted);font-size:13px;padding:0 2px}
   .lvl{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
   .lvl button{border:none;padding:7px 12px;font-size:12px;font-weight:800;font-family:'DM Sans';
     cursor:pointer;background:var(--bg2);color:var(--muted)}
@@ -372,7 +375,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.8</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v4.9</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -451,7 +454,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.8 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v4.9 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -477,11 +480,15 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.8</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v4.9</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
             <div class="seg"><button id="lvlOn">ON</button><button id="lvlOff">OFF</button></div>
+          </div>
+          <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
+            <span><b>Use my combinations</b></span>
+            <div class="seg"><button id="comboOn">ON</button><button id="comboOff">OFF</button></div>
           </div>
           <div id="lvlControls">
             <div class="fmt-row"><span>Next round</span>
@@ -492,6 +499,7 @@
             </div>
           </div>
         </div>
+        <div id="comboBox"></div>
         <div class="coach-hint" id="lvlHint">Levels are hidden from players. Set each player's level below.</div>
         <div id="coachList"></div>
         <button class="lock-done" id="coachDone">Done</button>
@@ -526,7 +534,9 @@ let state = {
   outAt: {},           // id -> time-out epoch ms
   c2: {},              // id -> times played on the good court (Court 2)
   levelOn: false,      // master switch for strong/weak balancing (off by default)
-  benchNext: []        // ids the host chose to sit out the NEXT draw (cleared after each draw)
+  benchNext: [],       // ids the host chose to sit out the NEXT draw (cleared after each draw)
+  useCombos: false,    // use the host's own custom rating combinations
+  combos: []           // each = [r1,r2,r3,r4]  → team1 = r1+r2, team2 = r3+r4
 };
 let nextId = 1;
 function clock(ts){ const d=new Date(ts); let h=d.getHours(); const m=d.getMinutes(); const ap=h<12?'am':'pm'; h=h%12||12; return h+':'+(m<10?'0':'')+m+ap; }
@@ -593,6 +603,8 @@ function migrate(){
   if(!state.c2) state.c2={};
   if(!Array.isArray(state.benchNext)) state.benchNext=[];
   if(typeof state.levelOn!=='boolean') state.levelOn=false;
+  if(typeof state.useCombos!=='boolean') state.useCombos=false;
+  if(!Array.isArray(state.combos)) state.combos=[];
   saveLocal();
 }
 function reRenderAll(){
@@ -679,6 +691,21 @@ function buildRound(){
 
   const lvl = state.levelOn===true;   // master switch: ON = balance teams by each player's rating
   const ratingOf = id => { const p=state.players.find(x=>x.id===id); const r=p&&typeof p.rating==='number'?p.rating:NaN; return isNaN(r)?RATING_DEFAULT:r; };
+
+  // HOST'S OWN COMBINATIONS — each combo is 4 target ratings → team1=r1+r2, team2=r3+r4.
+  // For each court, fill the 4 slots with the available players whose ratings are closest.
+  if(lvl && state.useCombos && state.combos && state.combos.length){
+    const avail=playing.map(p=>p.id);
+    const pickNearest=(target)=>{ let bi=0,bd=Infinity; avail.forEach((id,i)=>{const d=Math.abs(ratingOf(id)-target); if(d<bd){bd=d;bi=i;}}); return avail.splice(bi,1)[0]; };
+    const courts=[];
+    for(let c=0;c<numCourts;c++){
+      if(avail.length<4) break;
+      const combo=state.combos[(state.round + c) % state.combos.length];   // cycle combos, shift each round for variety
+      const a=pickNearest(combo[0]), b=pickNearest(combo[1]), cc=pickNearest(combo[2]), d=pickNearest(combo[3]);
+      courts.push({team1:[a,b], team2:[cc,d]});
+    }
+    return {courts:goodCourtOrder(courts), resting:resting.map(p=>p.id), score:0, matched:true, w:{p:100,c:5}};
+  }
 
   if(lvl){
     // RATING MODE — put similar-level players on the same court, then split each court two ways,
@@ -1186,6 +1213,7 @@ function openCoach(){
   $('lvlHint').innerHTML = on
     ? "Type each player's rating (0–100). Blank = 80. The draw makes both teams on a court even — pairs a strong with a weak, and puts similar levels together."
     : "Balancing is OFF — teams are drawn fair &amp; random. Turn ON to use ratings.";
+  renderCombos();
   const list=$('coachList'); list.innerHTML='';
   [...state.players].sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
     const row=document.createElement('div'); row.className='coach-row';
@@ -1196,6 +1224,37 @@ function openCoach(){
     inp.onchange=()=>{ const v=inp.value.trim(); if(v==='') delete p.rating; else { let n=Math.max(0,Math.min(100,parseInt(v,10)||0)); p.rating=n; } save(); };
     list.appendChild(row);
   });
+}
+function renderCombos(){
+  const box=$('comboBox'); if(!box) return;
+  const useC=state.useCombos===true;
+  $('comboOn').classList.toggle('act',useC); $('comboOff').classList.toggle('act',!useC);
+  $('comboOn').onclick=()=>{state.useCombos=true;save();openCoach();};
+  $('comboOff').onclick=()=>{state.useCombos=false;save();openCoach();};
+  box.style.opacity = useC?'1':'0.45';
+  let html='<div class="coach-hint" style="margin:10px 0 6px">Make your own combinations — each row is one court: '
+    +'<b>Team 1</b> (first two ratings) vs <b>Team 2</b> (last two). Add as many as you like; the draw uses them in turn and fills each slot with the nearest-rated player.</div>';
+  html+='<div id="comboList"></div>';
+  html+='<button id="comboAdd" class="sub-pick" style="text-align:center;font-weight:800;color:var(--draw)">＋ Add a combination</button>';
+  box.innerHTML=html;
+  const cl=$('comboList'); cl.innerHTML='';
+  (state.combos||[]).forEach((cb,idx)=>{
+    const row=document.createElement('div'); row.className='combo-row';
+    row.innerHTML=`<input class="rate-in cmb" type="number" min="0" max="100" value="${cb[0]??''}" data-i="${idx}" data-s="0">`
+      +`<input class="rate-in cmb" type="number" min="0" max="100" value="${cb[1]??''}" data-i="${idx}" data-s="1">`
+      +`<span class="combo-vs">vs</span>`
+      +`<input class="rate-in cmb" type="number" min="0" max="100" value="${cb[2]??''}" data-i="${idx}" data-s="2">`
+      +`<input class="rate-in cmb" type="number" min="0" max="100" value="${cb[3]??''}" data-i="${idx}" data-s="3">`
+      +`<button class="icon-btn del" data-del="${idx}" title="Delete">🗑</button>`;
+    cl.appendChild(row);
+  });
+  cl.querySelectorAll('.cmb').forEach(inp=>{
+    inp.onchange=()=>{ const i=+inp.dataset.i, s=+inp.dataset.s; const v=inp.value.trim();
+      const n=v===''?80:Math.max(0,Math.min(100,parseInt(v,10)||0));
+      state.combos[i][s]=n; save(); };
+  });
+  cl.querySelectorAll('[data-del]').forEach(b=>{ b.onclick=()=>{ state.combos.splice(+b.dataset.del,1); save(); renderCombos(); }; });
+  $('comboAdd').onclick=()=>{ state.combos=state.combos||[]; state.combos.push([100,60,100,60]); save(); renderCombos(); };
 }
 $('coachDone').onclick=()=>$('lockOverlay').classList.remove('show');
 
