@@ -382,7 +382,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v5.9</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.0</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -462,7 +462,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v5.9 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.0 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -488,7 +488,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v5.9</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.0</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -551,7 +551,8 @@ let state = {
   combos: [],          // each = [r1,r2,r3,r4]  → team1 = r1+r2, team2 = r3+r4
   pureDone: {},        // id -> true once the player has had their guaranteed same-level ("pure") game
   testMode: false,     // free re-draw: ignore the round lock so the host can test many draws in a row
-  noWarm: {}           // id -> true when the host tapped "let them in now" (skip warm-up)
+  noWarm: {},          // id -> true when the host tapped "let them in now" (skip warm-up)
+  firstDrawAt: 0       // epoch of the first draw — only arrivals after this get a warm-up
 };
 let nextId = 1;
 function clock(ts){ const d=new Date(ts); let h=d.getHours(); const m=d.getMinutes(); const ap=h<12?'am':'pm'; h=h%12||12; return h+':'+(m<10?'0':'')+m+ap; }
@@ -595,7 +596,7 @@ function migrate(){
   // new venue / new member list — replace roster on every phone, once
   if(state.rosterV!==ROSTER_V){
     nextId=1; defaultPlayers();
-    state.round=0; state.games={}; state.partner={}; state.court={}; state.rests={}; state.last=null; state.pureDone={}; state.noWarm={};
+    state.round=0; state.games={}; state.partner={}; state.court={}; state.rests={}; state.last=null; state.pureDone={}; state.noWarm={}; state.firstDrawAt=0;
     state.rosterV=ROSTER_V; state.locked=false;
     state.rev=(state.rev||0)+1000000;   // dominate any old cloud copy
     rosterWasReset=true;
@@ -623,6 +624,7 @@ function migrate(){
   if(!state.pureDone) state.pureDone={};
   if(typeof state.testMode!=='boolean') state.testMode=false;
   if(!state.noWarm) state.noWarm={};
+  if(typeof state.firstDrawAt!=='number') state.firstDrawAt=0;
   saveLocal();
 }
 function reRenderAll(){
@@ -669,11 +671,16 @@ function nameOf(id){ const p=state.players.find(p=>p.id===id); return p?p.name:'
 /* ================= CORE: build a round ================= */
 const GRACE_MS = 180000;   // 3-min warm-up: a just-arrived player isn't drawn for 3 min (time to change/warm up)
 function isWarmingUp(p){
-  // only applies once the session is underway; the opening draw uses everyone
-  if(!state.round) return false;
-  if(state.noWarm && state.noWarm[p.id]) return false;   // host tapped "let them in now"
+  // Warm-up is ONLY for a genuine LATE arrival — someone who taps IN after the session is
+  // already running. The opening crowd (everyone who was IN before the first draw) never
+  // counts as warming up, even if they all tapped IN seconds earlier.
+  if(!state.round) return false;                              // session hasn't started
+  if(state.noWarm && state.noWarm[p.id]) return false;       // host tapped "let them in now"
+  if((state.games[p.id]||0) > 0) return false;               // already played → warmed up
   const t=state.inAt[p.id];
-  return t && (Date.now()-t) < GRACE_MS;
+  if(!t) return false;
+  if(!state.firstDrawAt || t <= state.firstDrawAt) return false;  // was here before play began → not late
+  return (Date.now()-t) < GRACE_MS;
 }
 function buildRound(){
   const activeAll = state.players.filter(p=>p.active);
@@ -857,6 +864,7 @@ function goodCourtOrder(courts){
   return courts;
 }
 function commitRound(r){
+  if(state.round===0) state.firstDrawAt=Date.now();   // mark when play began (for late-arrival warm-up)
   state.round++;
   r.courts.forEach(ct=>{
     const four=[...ct.team1,...ct.team2];
@@ -947,12 +955,14 @@ function renderRoster(){
     let status='';
     if(p.active && benched){
       status = '<span class="rstat willsit">⏸ SITTING NEXT</span>';
+    } else if(p.active && playSet.has(p.id)){
+      status = '<span class="rstat play">PLAYING</span>';          // on court now → always show PLAYING
     } else if(p.active && isWarmingUp(p)){
       const left=Math.ceil((GRACE_MS-(Date.now()-state.inAt[p.id]))/60000);
       status = `<button class="rstat warmup" data-act="warmnow" title="Tap to let them play now">⏳ WARM-UP ${left}m · tap to allow</button>`;
-    } else if(state.last && p.active) status = playSet.has(p.id)
-      ? '<span class="rstat play">PLAYING</span>'
-      : '<span class="rstat rest">RESTING</span>';
+    } else if(state.last && p.active){
+      status = '<span class="rstat rest">RESTING</span>';
+    }
     div.innerHTML=`
       <div class="io">
         <button class="io-in${p.active?' act':''}" data-act="in">IN</button>
@@ -1459,7 +1469,7 @@ $('bulkSave').onclick=()=>{
 $('resetStatsBtn').onclick=()=>{
   if(confirm('End of day reset? Clears rounds, games, history and all in/out times. Players stay (marked out).')){
     state.round=0;state.games={};state.partner={};state.court={};state.rests={};state.last=null;state.locked=false;
-    state.inAt={};state.outAt={};state.c2={};state.benchNext=[];state.pureDone={};state.noWarm={};
+    state.inAt={};state.outAt={};state.c2={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
     state.timerDuration=900;                       // snap the clock back to the default 15:00
     state.players.forEach(p=>p.active=false);
     resetTimerReady();
@@ -1470,7 +1480,7 @@ $('restoreNamesBtn').onclick=()=>{
   if(confirm('Restore the original player name list? This replaces the current players.')){
     nextId=1; defaultPlayers();
     state.round=0;state.games={};state.partner={};state.court={};state.rests={};state.last=null;state.locked=false;
-    state.inAt={};state.outAt={};state.c2={};state.benchNext=[];state.pureDone={};state.noWarm={};
+    state.inAt={};state.outAt={};state.c2={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
     state.timerDuration=900; resetTimerReady();
     save();renderCourts();renderRoster();renderDrawButton();
   }
