@@ -382,7 +382,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.0</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.1</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -462,7 +462,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.0 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.1 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -488,7 +488,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.0</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.1</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -552,7 +552,8 @@ let state = {
   pureDone: {},        // id -> true once the player has had their guaranteed same-level ("pure") game
   testMode: false,     // free re-draw: ignore the round lock so the host can test many draws in a row
   noWarm: {},          // id -> true when the host tapped "let them in now" (skip warm-up)
-  firstDrawAt: 0       // epoch of the first draw — only arrivals after this get a warm-up
+  firstDrawAt: 0,      // epoch of the first draw — only arrivals after this get a warm-up
+  lastActive: 0        // epoch of last activity — a long gap means a new session (auto fresh start)
 };
 let nextId = 1;
 function clock(ts){ const d=new Date(ts); let h=d.getHours(); const m=d.getMinutes(); const ap=h<12?'am':'pm'; h=h%12||12; return h+':'+(m<10?'0':'')+m+ap; }
@@ -581,7 +582,24 @@ function defaultPlayers(){
 function saveLocal(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify({state,nextId})); }catch(e){}
 }
-function save(){ saveLocal(); pushState(); }
+function save(){ state.lastActive=Date.now(); saveLocal(); pushState(); }
+// A new session auto-starts fresh: if the app hasn't been touched for a few hours, opening it
+// clears last time's attendance & rounds. Reopening DURING tonight's play keeps the live session
+// (so one person opening their phone never wipes everyone's game).
+const STALE_MS = 5*60*60*1000;   // 5 hours
+function freshStart(){
+  state.round=0;state.games={};state.partner={};state.court={};state.rests={};state.last=null;state.locked=false;
+  state.inAt={};state.outAt={};state.c2={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
+  state.timerDuration=900;
+  state.players.forEach(p=>p.active=false);   // keep names & ratings, just mark everyone OUT
+  state.lastActive=Date.now();
+}
+function maybeFreshStart(){
+  const hadActivity = (state.round>0) || state.players.some(p=>p.active) || (state.inAt && Object.keys(state.inAt).length>0);
+  if(hadActivity && state.lastActive && (Date.now()-state.lastActive > STALE_MS)){
+    freshStart(); save(); if(typeof reRenderAll==='function') reRenderAll();
+  }
+}
 function load(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
@@ -625,6 +643,11 @@ function migrate(){
   if(typeof state.testMode!=='boolean') state.testMode=false;
   if(!state.noWarm) state.noWarm={};
   if(typeof state.firstDrawAt!=='number') state.firstDrawAt=0;
+  if(typeof state.lastActive!=='number'){
+    // bootstrap from the newest in/out timestamp we have, so an old session still ages out correctly
+    const ts=[...Object.values(state.inAt||{}),...Object.values(state.outAt||{})].filter(x=>typeof x==='number');
+    state.lastActive = ts.length ? Math.max(...ts) : Date.now();
+  }
   saveLocal();
 }
 function reRenderAll(){
@@ -1500,12 +1523,18 @@ $('wishSend').onclick=()=>{
 /* ================= INIT ================= */
 if(!load()) defaultPlayers();
 migrate();
+if(!SYNC_URL) maybeFreshStart();         // offline: decide from the local copy
 tRemaining=state.timerDuration;
 renderCourts();
 syncPeople();
 renderTimer();
 renderDrawButton();
-if(SYNC_URL){ if(rosterWasReset) pushState(); pullState(); setInterval(pullState, 2500); }
+if(SYNC_URL){
+  if(rosterWasReset) pushState();
+  // decide fresh-vs-continue AFTER the first cloud pull, so we use the newest activity time from any phone
+  pullState().then(maybeFreshStart);
+  setInterval(pullState, 2500);
+}
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 // refresh the roster each 15s so warm-up countdowns tick down and players auto-become eligible at 3 min
 setInterval(()=>{ if(state.players.some(p=>p.active && isWarmingUp(p))) renderRoster(); }, 15000);
