@@ -382,7 +382,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.1</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.2</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -445,7 +445,20 @@
   <div class="row-btns">
     <button class="ghost" id="resetStatsBtn">↺ Reset rounds & history</button>
     <button class="ghost" id="restoreNamesBtn" style="display:none">⤺ Restore name list</button>
+    <button class="ghost" id="logBtn">📋 Game log</button>
     <button class="ghost" id="wishBtn">💡 Wish list</button>
+  </div>
+
+  <div class="lock-overlay" id="logOverlay">
+    <div class="lock-card" style="max-width:560px">
+      <div class="lock-title">📋 Game Log</div>
+      <div class="coach-hint">Every draw and manual change is recorded. Tap <b>Copy</b> and paste it to Claude to review &amp; fine-tune the app.</div>
+      <pre id="logText" style="max-height:48vh;overflow:auto;white-space:pre-wrap;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:13px;line-height:1.5;font-family:ui-monospace,Menlo,monospace"></pre>
+      <button class="lock-done" id="logCopy">📋 Copy log</button>
+      <button class="lock-close" id="logWhats">Send on WhatsApp</button>
+      <button class="lock-close" id="logClear" style="color:#ff6b6b">Clear log</button>
+      <button class="lock-close" id="logClose">Close</button>
+    </div>
   </div>
 
   <div class="lock-overlay" id="wishOverlay">
@@ -462,7 +475,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.1 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.2 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -488,7 +501,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.1</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.2</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -553,7 +566,8 @@ let state = {
   testMode: false,     // free re-draw: ignore the round lock so the host can test many draws in a row
   noWarm: {},          // id -> true when the host tapped "let them in now" (skip warm-up)
   firstDrawAt: 0,      // epoch of the first draw — only arrivals after this get a warm-up
-  lastActive: 0        // epoch of last activity — a long gap means a new session (auto fresh start)
+  lastActive: 0,       // epoch of last activity — a long gap means a new session (auto fresh start)
+  log: []              // permanent recording of every draw + manual change (survives resets)
 };
 let nextId = 1;
 function clock(ts){ const d=new Date(ts); let h=d.getHours(); const m=d.getMinutes(); const ap=h<12?'am':'pm'; h=h%12||12; return h+':'+(m<10?'0':'')+m+ap; }
@@ -648,6 +662,7 @@ function migrate(){
     const ts=[...Object.values(state.inAt||{}),...Object.values(state.outAt||{})].filter(x=>typeof x==='number');
     state.lastActive = ts.length ? Math.max(...ts) : Date.now();
   }
+  if(!Array.isArray(state.log)) state.log=[];
   saveLocal();
 }
 function reRenderAll(){
@@ -903,7 +918,54 @@ function commitRound(r){
   if(r.courts.length>=2){ [...r.courts[1].team1,...r.courts[1].team2].forEach(id=> state.c2[id]=(state.c2[id]||0)+1); }
   state.benchNext=[];   // one-time "Sit next" picks are used up by this draw
   state.locked=true;   // block re-drawing until the round is played out
+  logRound(r);
   save();
+}
+
+/* ===== Game log — a permanent recording of every draw + manual change ===== */
+function logRound(r){
+  if(!Array.isArray(state.log)) state.log=[];
+  state.log.push({
+    t: Date.now(),
+    r: state.round,
+    c: r.courts.map((ct,i)=>({ n:i+1, a:ct.team1.map(nameOf), b:ct.team2.map(nameOf) })),
+    s: (r.resting||[]).map(nameOf),
+    m: []
+  });
+  if(state.log.length>200) state.log=state.log.slice(-200);   // keep ~a dozen nights
+}
+function logManual(txt){
+  if(Array.isArray(state.log) && state.log.length) state.log[state.log.length-1].m.push(txt);
+}
+function logSummary(){
+  if(!state.log || !state.log.length) return '';
+  const lastDay=new Date(state.log[state.log.length-1].t).toLocaleDateString();
+  const rows={};
+  state.log.filter(rec=>new Date(rec.t).toLocaleDateString()===lastDay).forEach(rec=>{
+    rec.c.forEach(ct=>[...ct.a,...ct.b].forEach(nm=>{
+      rows[nm]=rows[nm]||{g:0,c1:0,c2:0,c3:0}; rows[nm].g++; rows[nm]['c'+ct.n]=(rows[nm]['c'+ct.n]||0)+1;
+    }));
+  });
+  const names=Object.keys(rows).sort();
+  if(!names.length) return '';
+  let out='SUMMARY — today · name: games [Court1/Court2/Court3]\n';
+  names.forEach(nm=> out+=`  ${nm}: ${rows[nm].g}  [${rows[nm].c1}/${rows[nm].c2}/${rows[nm].c3}]\n`);
+  return out+'\n';
+}
+function logText(){
+  if(!state.log || !state.log.length) return 'No games recorded yet — draw a round first.';
+  let out='BEBC — GAME LOG\n\n'+logSummary();
+  let lastDay='';
+  state.log.forEach(rec=>{
+    const d=new Date(rec.t), day=d.toLocaleDateString();
+    if(day!==lastDay){ out+=`===== ${day} =====\n`; lastDay=day; }
+    const tm=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    out+=`\nRound ${rec.r} · ${tm}\n`;
+    rec.c.forEach(ct=> out+=`  Court ${ct.n}:  ${ct.a.join(' & ')}  vs  ${ct.b.join(' & ')}\n`);
+    if(rec.s && rec.s.length) out+=`  Sitting: ${rec.s.join(', ')}\n`;
+    (rec.m||[]).forEach(m=> out+=`  ✏️ ${m}\n`);
+  });
+  return out;
 }
 
 /* ================= RENDER ================= */
@@ -1322,6 +1384,7 @@ function subPositionSwap(xId,vId){
   courts.forEach(ct=>applyCourtStats(ct,-1));   // remove old pairings
   a.ct[a.k][a.i]=vId; b.ct[b.k][b.i]=xId;        // trade spots
   courts.forEach(ct=>applyCourtStats(ct,+1));    // add new pairings
+  logManual(`${nameOf(xId)} ⇄ ${nameOf(vId)} (swapped spots)`);
   save(); renderCourts(); renderRoster();
 }
 function subSwap(xId,vId){
@@ -1346,6 +1409,7 @@ function subSwap(xId,vId){
   // rest balance: volunteer no longer resting; leaver now resting
   state.rests[vId]=Math.max(0,(state.rests[vId]||0)-1);
   state.rests[xId]=(state.rests[xId]||0)+1;
+  logManual(`${nameOf(vId)} came in for ${nameOf(xId)}`);
   save(); renderCourts(); renderRoster();
 }
 
@@ -1518,6 +1582,30 @@ $('wishSend').onclick=()=>{
   const msg='[BEBC — Brameast Badminton Club] Wish List:\n'+t;
   window.open('https://wa.me/12819058789?text='+encodeURIComponent(msg),'_blank');
   $('wishOverlay').classList.remove('show');
+};
+
+// ===== Game log =====
+$('logBtn').onclick=()=>{ $('logText').textContent=logText(); $('logOverlay').classList.add('show'); };
+$('logClose').onclick=()=>$('logOverlay').classList.remove('show');
+$('logOverlay').onclick=e=>{ if(e.target===$('logOverlay')) $('logOverlay').classList.remove('show'); };
+$('logCopy').onclick=async()=>{
+  const t=logText();
+  try{ await navigator.clipboard.writeText(t); $('logCopy').textContent='✓ Copied — paste it to Claude'; }
+  catch(e){
+    // fallback: select the text so the user can long-press → copy
+    const el=$('logText'); const rng=document.createRange(); rng.selectNodeContents(el);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(rng);
+    $('logCopy').textContent='Select all above & copy';
+  }
+  setTimeout(()=>{ $('logCopy').textContent='📋 Copy log'; },2500);
+};
+$('logWhats').onclick=()=>{
+  window.open('https://wa.me/12819058789?text='+encodeURIComponent(logText()),'_blank');
+};
+$('logClear').onclick=()=>{
+  if(confirm('Clear the whole game-log recording? This cannot be undone.')){
+    state.log=[]; save(); $('logText').textContent=logText();
+  }
 };
 
 /* ================= INIT ================= */
