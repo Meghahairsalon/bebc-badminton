@@ -382,7 +382,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.2</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.3</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -475,7 +475,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.2 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.3 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -501,7 +501,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.2</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.3</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -784,7 +784,7 @@ function buildRound(){
   }
 
   // balancing OFF — fair, varied teams (fewest repeat partners / shared courts)
-  const W_PARTNER=100, W_COURT=5;
+  const W_PARTNER=100, W_COURT=18;   // W_COURT also controls repeat opponents (same court = facing again)
   let best=null, bestScore=Infinity;
   const ids=playing.map(p=>p.id); const tries=2500;
   for(let t=0;t<tries;t++){
@@ -846,9 +846,9 @@ function levelDraw(elig, numCourts, bandOf, ratingOf){
       if(ct.team2.filter(id=>bandOf(id)===LOW).length>1) s+=1e6;
       if([...ct.team1,...ct.team2].every(id=>bandOf(id)===LOW)) s+=1e6;   // never an all-weak court
       if(pureCourt(ct)) [...ct.team1,...ct.team2].forEach(id=>{ if(needPure(id)) s-=800; });  // 4) owed pure game
-      s+=50*((state.partner[key(ct.team1[0],ct.team1[1])]||0)+(state.partner[key(ct.team2[0],ct.team2[1])]||0));  // 5)
+      s+=50*((state.partner[key(ct.team1[0],ct.team1[1])]||0)+(state.partner[key(ct.team2[0],ct.team2[1])]||0));  // 5) repeat partners
       const f=[...ct.team1,...ct.team2];
-      for(let i=0;i<4;i++)for(let j=i+1;j<4;j++) s+=3*(state.court[key(f[i],f[j])]||0);
+      for(let i=0;i<4;i++)for(let j=i+1;j<4;j++) s+=20*(state.court[key(f[i],f[j])]||0);   // 6) repeat court-mates (= repeat opponents)
     }
     return s;
   }
@@ -873,7 +873,10 @@ function levelDraw(elig, numCourts, bandOf, ratingOf){
       const t1=[four[sp[0][0]],four[sp[0][1]]], t2=[four[sp[1][0]],four[sp[1][1]]];
       const a=ratingOf(t1[0])+ratingOf(t1[1]), b=ratingOf(t2[0])+ratingOf(t2[1]);
       if(!((a===curT1&&b===curT2)||(a===curT2&&b===curT1))) continue;   // keep teams exactly as even
-      const cost=(state.partner[key(t1[0],t1[1])]||0)+(state.partner[key(t2[0],t2[1])]||0);
+      // fewest repeat partners (heavy) AND fewest repeat opponents (lighter) — same four, best pairing
+      const partnerRep=(state.partner[key(t1[0],t1[1])]||0)+(state.partner[key(t2[0],t2[1])]||0);
+      let oppRep=0; t1.forEach(x=>t2.forEach(y=> oppRep+=(state.court[key(x,y)]||0)));
+      const cost=partnerRep*10+oppRep;
       if(cost<pc){pc=cost;pick={team1:t1,team2:t2};}
     }
     if(pick){ ct.team1=pick.team1; ct.team2=pick.team2; }
