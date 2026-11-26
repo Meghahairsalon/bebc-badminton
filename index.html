@@ -382,7 +382,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.4</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.5</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -462,12 +462,15 @@
   </div>
 
   <div class="lock-overlay" id="wishOverlay">
-    <div class="lock-card">
+    <div class="lock-card" style="max-width:560px">
       <div class="lock-title">💡 Wish List</div>
-      <div class="coach-hint">Type any change or feature you want, then send it to the developer on WhatsApp.</div>
-      <textarea id="wishText" placeholder="e.g. Add a 4th court option…" style="width:100%;min-height:120px;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:15px;font-family:'DM Sans';line-height:1.6"></textarea>
-      <button class="lock-done" id="wishSend">Send on WhatsApp</button>
-      <button class="lock-close" id="wishCancel">Cancel</button>
+      <div class="coach-hint">Speak or type any change you want (tap the mic on your keyboard). It saves here and shows on everyone's phone. Then tap <b>Copy for Claude</b> and paste it to Aman's Claude — it gets built in.</div>
+      <textarea id="wishText" placeholder="e.g. Add a 4th court… make the names bigger…" style="width:100%;min-height:74px;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:16px;font-family:'DM Sans';line-height:1.5"></textarea>
+      <button class="lock-done" id="wishAdd" style="margin-top:8px">➕ Add to wish list</button>
+      <div id="wishItems" style="margin-top:6px"></div>
+      <button class="lock-done" id="wishCopy" style="background:var(--draw)">📋 Copy for Claude</button>
+      <button class="lock-close" id="wishClear" style="color:#ff6b6b">Clear all</button>
+      <button class="lock-close" id="wishCancel">Close</button>
     </div>
   </div>
 
@@ -475,7 +478,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.4 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.5 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -501,7 +504,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.4</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.5</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -567,7 +570,8 @@ let state = {
   noWarm: {},          // id -> true when the host tapped "let them in now" (skip warm-up)
   firstDrawAt: 0,      // epoch of the first draw — only arrivals after this get a warm-up
   lastActive: 0,       // epoch of last activity — a long gap means a new session (auto fresh start)
-  log: []              // permanent recording of every draw + manual change (survives resets)
+  log: [],             // permanent recording of every draw + manual change (survives resets)
+  wishes: []           // shared wish list — {t, text}; syncs to every phone, survives resets
 };
 let nextId = 1;
 function clock(ts){ const d=new Date(ts); let h=d.getHours(); const m=d.getMinutes(); const ap=h<12?'am':'pm'; h=h%12||12; return h+':'+(m<10?'0':'')+m+ap; }
@@ -663,6 +667,7 @@ function migrate(){
     state.lastActive = ts.length ? Math.max(...ts) : Date.now();
   }
   if(!Array.isArray(state.log)) state.log=[];
+  if(!Array.isArray(state.wishes)) state.wishes=[];
   saveLocal();
 }
 function reRenderAll(){
@@ -1580,17 +1585,36 @@ $('restoreNamesBtn').onclick=()=>{
     save();renderCourts();renderRoster();renderDrawButton();
   }
 };
-/* wish list */
-$('wishBtn').onclick=()=>{ try{$('wishText').value=localStorage.getItem('bbb_wish')||'';}catch(e){} $('wishOverlay').classList.add('show'); };
-$('wishCancel').onclick=()=>{ try{localStorage.setItem('bbb_wish',$('wishText').value);}catch(e){} $('wishOverlay').classList.remove('show'); };
-$('wishOverlay').onclick=e=>{ if(e.target===$('wishOverlay')){ try{localStorage.setItem('bbb_wish',$('wishText').value);}catch(e2){} $('wishOverlay').classList.remove('show'); } };
-$('wishSend').onclick=()=>{
+/* wish list — shared & synced; Dipak (or anyone) adds wishes, they show on every phone */
+function renderWishes(){
+  const box=$('wishItems'); if(!box) return;
+  if(!state.wishes || !state.wishes.length){ box.innerHTML='<div class="coach-hint" style="opacity:.7">No wishes yet — add one above.</div>'; return; }
+  box.innerHTML=state.wishes.map((w,i)=>{
+    const d=new Date(w.t), tm=d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+    return `<div class="rest-chip" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;width:100%;box-sizing:border-box;margin:5px 0;padding:10px 12px;font-size:15px">
+      <span><b style="color:var(--brand)">${i+1}.</b> ${w.text.replace(/</g,'&lt;')} <em style="font-size:10px">${tm}</em></span>
+      <button data-wi="${i}" class="wdel" style="background:none;border:none;color:#ff6b6b;font-size:18px;cursor:pointer;line-height:1">🗑</button></div>`;
+  }).join('');
+  box.querySelectorAll('.wdel').forEach(b=> b.onclick=()=>{ state.wishes.splice(+b.dataset.wi,1); save(); renderWishes(); });
+}
+function wishesText(){
+  if(!state.wishes || !state.wishes.length) return 'No wishes yet.';
+  return 'BEBC — WISH LIST (please build these in):\n\n'+state.wishes.map((w,i)=>`${i+1}. ${w.text}`).join('\n');
+}
+$('wishBtn').onclick=()=>{ renderWishes(); $('wishOverlay').classList.add('show'); };
+$('wishCancel').onclick=()=>$('wishOverlay').classList.remove('show');
+$('wishOverlay').onclick=e=>{ if(e.target===$('wishOverlay')) $('wishOverlay').classList.remove('show'); };
+$('wishAdd').onclick=()=>{
   const t=$('wishText').value.trim(); if(!t) return;
-  try{localStorage.setItem('bbb_wish',t);}catch(e){}
-  const msg='[BEBC — Brameast Badminton Club] Wish List:\n'+t;
-  window.open('https://wa.me/12819058789?text='+encodeURIComponent(msg),'_blank');
-  $('wishOverlay').classList.remove('show');
+  state.wishes.push({t:Date.now(), text:t}); save();
+  $('wishText').value=''; renderWishes();
 };
+$('wishCopy').onclick=async()=>{
+  try{ await navigator.clipboard.writeText(wishesText()); $('wishCopy').textContent='✓ Copied — paste it to Claude'; }
+  catch(e){ $('wishCopy').textContent='Select the list & copy'; }
+  setTimeout(()=>{ $('wishCopy').textContent='📋 Copy for Claude'; },2500);
+};
+$('wishClear').onclick=()=>{ if(confirm('Clear the whole wish list?')){ state.wishes=[]; save(); renderWishes(); } };
 
 // ===== Game log =====
 $('logBtn').onclick=()=>{ $('logText').textContent=logText(); $('logOverlay').classList.add('show'); };
