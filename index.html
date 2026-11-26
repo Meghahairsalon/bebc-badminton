@@ -382,7 +382,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.3</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.4</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -475,7 +475,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.3 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.4 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -501,7 +501,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.3</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.4</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -895,10 +895,15 @@ function levelDraw(elig, numCourts, bandOf, ratingOf){
 // it once), then the lowest total — rotates it as fairly as the maths allows.
 function goodCourtOrder(courts){
   if(!courts || courts.length<2) return courts;
+  // Give Court 2 to the foursome that FEEDS the hungriest player (lowest Court-2 count so far),
+  // then the lowest total, then avoid the biggest hog. This guarantees whoever has had the good
+  // court least gets it next — so nobody stays stuck on zero.
+  const c2=id=>state.c2[id]||0;
   const score = ct => { const ids=[...ct.team1,...ct.team2];
-    const mx=Math.max(0,...ids.map(id=>state.c2[id]||0));            // worst repeat on this foursome
-    const sm=ids.reduce((s,id)=>s+(state.c2[id]||0),0);             // total Court-2 history
-    return mx*1000+sm; };
+    const mn=Math.min(...ids.map(c2));                               // hungriest player here (lower = give it to them)
+    const sm=ids.reduce((s,id)=>s+c2(id),0);                        // total Court-2 history
+    const mx=Math.max(...ids.map(c2));                              // biggest hog (tie-break)
+    return mn*10000 + sm*100 + mx; };
   let minI=0, minV=Infinity;
   courts.forEach((ct,i)=>{ const v=score(ct); if(v<minV){minV=v;minI=i;} });
   if(minI!==1){ const t=courts[1]; courts[1]=courts[minI]; courts[minI]=t; }
