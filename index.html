@@ -382,7 +382,7 @@
   <header>
     <div class="title">
       <span class="shuttle">🏸</span>
-      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.5</span></h1>
+      <h1>BEBC<span class="sub">BRAMEAST BADMINTON CLUB · v6.6</span></h1>
     </div>
     <div class="round-badge" id="roundBadge"><small>ROUND</small><b id="roundNum">0</b></div>
   </header>
@@ -478,7 +478,7 @@
     <div class="f-brand">Powered by <b>Insure With Aman</b></div>
     <div class="f-line">Aman Bhatia · FSRA Licensed Insurance Advisor · Brampton &amp; GTA since 2006</div>
     <div class="f-line"><a href="tel:+14163000056">416-300-0056</a> · <a href="https://insurewithaman.ca" target="_blank" rel="noopener">insurewithaman.ca</a> · English · ਪੰਜਾਬੀ · हिंदी</div>
-    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.5 · 3 COURTS · NO REPEAT PARTNERS</div>
+    <div class="f-small">BEBC · BRAMEAST BADMINTON CLUB · v6.6 · 3 COURTS · NO REPEAT PARTNERS</div>
   </footer>
 
   <div class="lock-overlay" id="subOverlay">
@@ -504,7 +504,7 @@
         <button class="lock-close" id="pinCancel">Cancel</button>
       </div>
       <div id="coachView" style="display:none">
-        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.5</span></div>
+        <div class="lock-title">Coach panel <span style="font-size:13px;color:var(--muted);font-family:'DM Sans';letter-spacing:0">v6.6</span></div>
         <div class="coach-fmt">
           <div class="fmt-row" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
             <span><b>Skill balancing (ratings)</b></span>
@@ -560,7 +560,7 @@ let state = {
   locked: false,       // true while a round is being played (blocks re-draw fishing)
   inAt: {},            // id -> time-in epoch ms
   outAt: {},           // id -> time-out epoch ms
-  c2: {},              // id -> times played on the good court (Court 2)
+  c1: {}, c2: {}, c3: {},   // times played on each physical court (c2 = the good court)
   levelOn: false,      // master switch for strong/weak balancing (off by default)
   benchNext: [],       // ids the host chose to sit out the NEXT draw (cleared after each draw)
   useCombos: false,    // use the host's own custom rating combinations
@@ -607,7 +607,7 @@ function save(){ state.lastActive=Date.now(); saveLocal(); pushState(); }
 const STALE_MS = 5*60*60*1000;   // 5 hours
 function freshStart(){
   state.round=0;state.games={};state.partner={};state.court={};state.rests={};state.last=null;state.locked=false;
-  state.inAt={};state.outAt={};state.c2={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
+  state.inAt={};state.outAt={};state.c1={};state.c2={};state.c3={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
   state.timerDuration=900;
   state.players.forEach(p=>p.active=false);   // keep names & ratings, just mark everyone OUT
   state.lastActive=Date.now();
@@ -652,7 +652,7 @@ function migrate(){
   if(!state.inAt) state.inAt={};
   if(!state.outAt) state.outAt={};
   if(state.timeFmtV!==1){ state.inAt={}; state.outAt={}; state.timeFmtV=1; }
-  if(!state.c2) state.c2={};
+  if(!state.c2) state.c2={}; if(!state.c1) state.c1={}; if(!state.c3) state.c3={};
   if(!Array.isArray(state.benchNext)) state.benchNext=[];
   if(typeof state.levelOn!=='boolean') state.levelOn=false;
   if(typeof state.useCombos!=='boolean') state.useCombos=false;
@@ -912,6 +912,12 @@ function goodCourtOrder(courts){
   let minI=0, minV=Infinity;
   courts.forEach((ct,i)=>{ const v=score(ct); if(v<minV){minV=v;minI=i;} });
   if(minI!==1){ const t=courts[1]; courts[1]=courts[minI]; courts[minI]=t; }
+  // With 3 courts, also rotate Courts 1 & 3 so nobody gets stuck on one: send the foursome
+  // that has been on Court 3 more (vs Court 1) to Court 1, and the other to Court 3.
+  if(courts.length>=3){
+    const diff=ct=>[...ct.team1,...ct.team2].reduce((s,id)=>s+((state.c3[id]||0)-(state.c1[id]||0)),0);
+    if(diff(courts[2]) > diff(courts[0])){ const t=courts[0]; courts[0]=courts[2]; courts[2]=t; }
+  }
   return courts;
 }
 function commitRound(r){
@@ -928,7 +934,10 @@ function commitRound(r){
   (r.pureThisRound||[]).forEach(id=> state.pureDone[id]=true);   // mark guaranteed same-level games as given
   if(state.autoAlt!==false) state.matchNext = !r.matched;   // alternate next round
   state.last=r;
-  if(r.courts.length>=2){ [...r.courts[1].team1,...r.courts[1].team2].forEach(id=> state.c2[id]=(state.c2[id]||0)+1); }
+  // tally which physical court each foursome played (Court 1 = index 0, Court 2 = index 1, Court 3 = index 2)
+  if(r.courts[0]) [...r.courts[0].team1,...r.courts[0].team2].forEach(id=> state.c1[id]=(state.c1[id]||0)+1);
+  if(r.courts[1]) [...r.courts[1].team1,...r.courts[1].team2].forEach(id=> state.c2[id]=(state.c2[id]||0)+1);
+  if(r.courts[2]) [...r.courts[2].team1,...r.courts[2].team2].forEach(id=> state.c3[id]=(state.c3[id]||0)+1);
   state.benchNext=[];   // one-time "Sit next" picks are used up by this draw
   state.locked=true;   // block re-drawing until the round is played out
   logRound(r);
@@ -1388,10 +1397,11 @@ function subPositionSwap(xId,vId){
   if(!state.last) return;
   const a=locateOnCourt(xId), b=locateOnCourt(vId); if(!a||!b) return;
   const ai=state.last.courts.indexOf(a.ct), bi=state.last.courts.indexOf(b.ct);
-  // move good-court (Court 2) credit with the player when they change courts
+  // move each court's credit with the player when they change courts
   if(ai!==bi){
-    if(ai===1){ state.c2[xId]=Math.max(0,(state.c2[xId]||0)-1); state.c2[vId]=(state.c2[vId]||0)+1; }
-    if(bi===1){ state.c2[vId]=Math.max(0,(state.c2[vId]||0)-1); state.c2[xId]=(state.c2[xId]||0)+1; }
+    const cm=['c1','c2','c3'];
+    const mv=(idx,leave,join)=>{ const k=cm[idx]; if(!k) return; state[k][leave]=Math.max(0,(state[k][leave]||0)-1); state[k][join]=(state[k][join]||0)+1; };
+    mv(ai,xId,vId); mv(bi,vId,xId);
   }
   const courts = a.ct===b.ct ? [a.ct] : [a.ct,b.ct];
   courts.forEach(ct=>applyCourtStats(ct,-1));   // remove old pairings
@@ -1569,7 +1579,7 @@ $('bulkSave').onclick=()=>{
 $('resetStatsBtn').onclick=()=>{
   if(confirm('End of day reset? Clears rounds, games, history and all in/out times. Players stay (marked out).')){
     state.round=0;state.games={};state.partner={};state.court={};state.rests={};state.last=null;state.locked=false;
-    state.inAt={};state.outAt={};state.c2={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
+    state.inAt={};state.outAt={};state.c1={};state.c2={};state.c3={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
     state.timerDuration=900;                       // snap the clock back to the default 15:00
     state.players.forEach(p=>p.active=false);
     resetTimerReady();
@@ -1580,7 +1590,7 @@ $('restoreNamesBtn').onclick=()=>{
   if(confirm('Restore the original player name list? This replaces the current players.')){
     nextId=1; defaultPlayers();
     state.round=0;state.games={};state.partner={};state.court={};state.rests={};state.last=null;state.locked=false;
-    state.inAt={};state.outAt={};state.c2={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
+    state.inAt={};state.outAt={};state.c1={};state.c2={};state.c3={};state.benchNext=[];state.pureDone={};state.noWarm={};state.firstDrawAt=0;
     state.timerDuration=900; resetTimerReady();
     save();renderCourts();renderRoster();renderDrawButton();
   }
